@@ -1,17 +1,31 @@
 #!/usr/bin/env python3
 """
-Fetch 20 live open binary markets from Manifold Markets across AI, Energy,
-Biotech, and Macro domains, enrich with calibrated world-model estimates,
-Popperian reasoning traces, and historical calibration benchmarks.
+Build-time Manifold Markets ingestion and quantitative backtest pipeline.
 
-Outputs: public/data/markets.json
+1. Backtest: Queries resolved binary markets from Manifold Markets across
+   AI, Energy, Biotech, and Macro domains, samples each market's price at a
+   fixed 7-day horizon before close/resolution via /v0/bets, applies ONE
+   pre-registered rule (logistic extremization, k = 1.15), and computes
+   exact Brier score, Log-Loss, Brier Skill Score, and Tail-Bin Score
+   (<15% / >85%) against the Manifold crowd baseline.
+
+2. Live Markets: Fetches 20 active, non-expired binary markets (5 per domain)
+   and applies the exact same logistic extremization rule (k = 1.15).
+
+3. Forward Ledger: Maintains an append-only forward ledger in
+   data/forward_ledger.json starting 26 Nov 2026.
+
+Outputs:
+  - public/data/markets.json
+  - data/forward_ledger.json
 """
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import math
-import os
 import re
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -19,60 +33,147 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 BASE_URL = "https://api.manifold.markets/v0"
-USER_AGENT = "CalibratedWorldModelEngine/2.0 (Mohammed KM)"
+USER_AGENT = "CalibratedForecastingEngine/3.0 (Mohammed KM)"
+
+# Pre-registered quantitative rule (applied identically to backtest and live markets)
+EXTREMIZATION_K = 1.15
+HORIZON_DAYS = 7
+TAIL_LOW = 0.15
+TAIL_HIGH = 0.85
+
+RULE_SPEC = {
+    "id": "logistic_extremization_k1.15",
+    "name": "Logistic Extremization (k = 1.15)",
+    "formula": "p_model = sigmoid(1.15 * logit(p_market))",
+    "parameterK": EXTREMIZATION_K,
+    "horizonDays": HORIZON_DAYS,
+    "tailThresholdLow": TAIL_LOW,
+    "tailThresholdHigh": TAIL_HIGH,
+    "summary": (
+        "Transforms each market probability p into log-odds, multiplies by k = 1.15, "
+        "and maps back through the logistic sigmoid (clamped to [1%, 99%]). "
+        "Backtest prices are sampled 7 days before market close/resolution."
+    ),
+}
+
+DOMAINS = ["AI", "Energy", "Biotech", "Macro"]
 
 DOMAIN_KEYWORDS = {
     "AI": [
         r"\bai\b", r"\bllm\b", r"\bagi\b", r"openai", r"anthropic", r"claude",
         r"gemini", r"gpt-", r"deepmind", r"nvidia", r"benchmark", r"frontier model",
         r"artificial intelligence", r"reasoning model", r"transformer", r"compute",
-        r"autonomous", r"robotics", r"humanoid", r"swe-bench", r"arc-agi",
+        r"autonomous", r"robotics", r"humanoid", r"swe-bench", r"arc-agi", r"chatgpt",
     ],
     "Energy": [
         r"fusion", r"nuclear", r"solar", r"grid", r"battery", r"oil", r"crude",
         r"brent", r"wti", r"smr", r"reactor", r"renewable", r"gigawatt", r"\bgw\b",
         r"electricity", r"energy", r"lithium", r"geothermal", r"climate", r"carbon",
-        r"ev\b", r"electric vehicle", r"power plant", r"natural gas",
+        r"\bev\b", r"electric vehicle", r"power plant", r"natural gas",
     ],
     "Biotech": [
         r"fda", r"trial", r"phase 3", r"phase iii", r"vaccine", r"crispr",
         r"gene therapy", r"glp-1", r"ozempic", r"longevity", r"alzheimer",
-        r"cancer", r"biotech", r"drug", r"clinical", r"mRNA", r"protein",
-        r"alphafold", r"pandemic", r"h5n1", r"bird flu", r"science", r"nobel",
-        r"nasa", r"mars", r"spacex", r"starship", r"fusion",
+        r"cancer", r"biotech", r"drug", r"clinical", r"mrna", r"protein",
+        r"alphafold", r"pandemic", r"h5n1", r"bird flu", r"nobel",
+        r"nasa", r"mars", r"spacex", r"starship",
     ],
     "Macro": [
-        r"fed\b", r"federal reserve", r"interest rate", r"inflation", r"\bcpi\b",
+        r"\bfed\b", r"federal reserve", r"interest rate", r"inflation", r"\bcpi\b",
         r"recession", r"\bgdp\b", r"unemployment", r"tariff", r"s&p 500",
-        r"treasury", r"yield", r"central bank", r"ecb\b", r"china", r"economy",
+        r"treasury", r"yield", r"central bank", r"\becb\b", r"china", r"economy",
         r"economic", r"debt", r"deficit", r"gold", r"bitcoin", r"dollar",
         r"nasdaq", r"rate cut", r"rate hike",
     ],
 }
 
 EXCLUDE_PATTERNS = [
-    r"will i\b", r"my\b", r"manifold", r"mana\b", r"resolve yes if",
+    r"will i\b", r"\bmy\b", r"manifold", r"\bmana\b", r"resolve yes if",
     r"free money", r"subsidy", r"test market", r"shitpost", r"meme",
-    r"nba", r"nfl", r"ufc", r"premier league", r"world cup", r"oscar",
+    r"\bnba\b", r"\bnfl\b", r"\bufc\b", r"premier league", r"world cup", r"oscar",
     r"grammy", r"taylor swift", r"mrbeast", r"twitch", r"youtube",
-    r"nuclear war", r"nuclear weapon", r"nuke\b", r"wipe out humanity",
+    r"nuclear war", r"nuclear weapon", r"\bnuke\b", r"wipe out humanity",
     r"election", r"president", r"trump", r"biden", r"harris", r"senate",
     r"solar system", r"solar eclipse", r"solar planetary", r"cybertruck",
-    r"be a fed\b", r"fuentes", r"polymarket", r"parlay",
+    r"be a fed\b", r"fuentes", r"polymarket", r"parlay", r"metaculus",
+    r"risk[- ]free", r"interest rate market", r"resolve no on", r"milky way",
 ]
 
 DOMAIN_SEARCH_TERMS = {
-    "AI": ["OpenAI", "Anthropic", "AGI", "benchmark", "Nvidia"],
-    "Energy": ["fusion power", "nuclear power", "solar power", "battery", "crude oil"],
-    "Biotech": ["FDA", "cancer", "vaccine", "CRISPR", "Alzheimer"],
+    "AI": ["OpenAI", "Anthropic", "AGI", "GPT", "Nvidia"],
+    "Energy": ["fusion", "nuclear power", "solar", "crude oil", "battery"],
+    "Biotech": ["FDA", "cancer", "vaccine", "CRISPR", "clinical trial"],
     "Macro": ["interest rate", "recession", "inflation", "GDP", "S&P 500"],
 }
 
+DOMAIN_CHECKLIST_TEMPLATES = {
+    "AI": {
+        "ref_class": "frontier capability & deployment milestones",
+        "checklist_note": "Check whether the contract hinges on a public benchmark readout, an official release changelog, or private evaluation splits.",
+        "falsifiers": [
+            "Independent benchmark verification on held-out private splits",
+            "Official release changelog or compute capital filing",
+        ],
+    },
+    "Energy": {
+        "ref_class": "physical infrastructure, grid interconnection, and commodity cycles",
+        "checklist_note": "Check permitting lead times, interconnection queue dates, and published EIA/IEA capacity telemetry.",
+        "falsifiers": [
+            "EIA / IEA quarterly capacity and generation telemetry",
+            "Binding EPC milestone, interconnection approval, or OPEC+ quota revision",
+        ],
+    },
+    "Biotech": {
+        "ref_class": "clinical trial readouts and regulatory approvals",
+        "checklist_note": "Check primary endpoint definitions on ClinicalTrials.gov and scheduled FDA PDUFA or advisory committee dates.",
+        "falsifiers": [
+            "Peer-reviewed primary endpoint readout on ClinicalTrials.gov",
+            "FDA PDUFA action letter or advisory committee vote",
+        ],
+    },
+    "Macro": {
+        "ref_class": "central bank policy cycles and official macro releases",
+        "checklist_note": "Compare Manifold prices against OIS/SOFR futures, Fed Funds implied odds, and official release calendars.",
+        "falsifiers": [
+            "Official BLS, BEA, or FOMC statement release",
+            "Implied probability shift in 30-day Fed Funds or Treasury term structure",
+        ],
+    },
+}
 
-def http_get_json(url: str, timeout: int = 8):
+
+def http_get_json(url: str, timeout: int = 10):
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         return json.loads(resp.read().decode("utf-8"))
+
+
+def clamp(v: float, lo: float = 0.01, hi: float = 0.99) -> float:
+    return max(lo, min(hi, v))
+
+
+def logit(p: float) -> float:
+    p_c = clamp(p, 0.005, 0.995)
+    return math.log(p_c / (1.0 - p_c))
+
+
+def inv_logit(x: float) -> float:
+    return 1.0 / (1.0 + math.exp(-x))
+
+
+def apply_rule(p_market: float, k: float = EXTREMIZATION_K) -> float:
+    """Single pre-registered rule: logistic extremization by factor k."""
+    p_c = clamp(float(p_market), 0.01, 0.99)
+    return round(clamp(inv_logit(k * logit(p_c)), 0.01, 0.99), 4)
+
+
+def brier_score(p: float, y: int) -> float:
+    return (p - y) ** 2
+
+
+def log_loss(p: float, y: int) -> float:
+    p_c = clamp(p, 0.01, 0.99)
+    return -math.log(p_c) if y == 1 else -math.log(1.0 - p_c)
 
 
 def classify_domain(question: str):
@@ -89,22 +190,39 @@ def classify_domain(question: str):
 
     if not scores:
         return None
-    # Tie-break priority: AI, Energy, Biotech, Macro
-    order = ["AI", "Energy", "Biotech", "Macro"]
-    best = sorted(scores.items(), key=lambda kv: (-kv[1], order.index(kv[0])))[0][0]
+    best = sorted(scores.items(), key=lambda kv: (-kv[1], DOMAINS.index(kv[0])))[0][0]
     return best
 
 
-def is_clean_binary(m: dict) -> bool:
+def has_past_deadline_in_text(question: str, current_year: int) -> bool:
+    """Reject questions explicitly referencing a past deadline year (e.g. EOY 2025)."""
+    q = question.lower()
+    # Any explicit 4-digit year strictly earlier than current_year
+    for match in re.finditer(r"\b(20\d\d)\b", q):
+        yr = int(match.group(1))
+        if yr < current_year:
+            return True
+    # Phrases like "before 2026" when we are already in 2026
+    if re.search(rf"\bbefore\s+{current_year}\b", q):
+        return True
+    return False
+
+
+def is_clean_open_binary(m: dict, now_ms: int, current_year: int) -> bool:
     if m.get("outcomeType") != "BINARY":
         return False
     if m.get("isResolved"):
+        return False
+    close_ms = m.get("closeTime")
+    if not close_ms or float(close_ms) <= now_ms + 86400 * 1000:
         return False
     prob = m.get("probability")
     if prob is None or not (0.01 <= float(prob) <= 0.99):
         return False
     q = (m.get("question") or "").strip()
     if len(q) < 18 or len(q) > 160:
+        return False
+    if has_past_deadline_in_text(q, current_year):
         return False
     liq = float(m.get("totalLiquidity") or 0)
     vol = float(m.get("volume") or 0)
@@ -113,312 +231,242 @@ def is_clean_binary(m: dict) -> bool:
     return True
 
 
-def deterministic_hash_unit(text: str) -> float:
-    h = 2166136261
-    for ch in text:
-        h ^= ord(ch)
-        h = (h * 16777619) & 0xFFFFFFFF
-    return (h % 10000) / 10000.0
+def is_clean_resolved_binary(m: dict) -> bool:
+    if m.get("outcomeType") != "BINARY":
+        return False
+    if not m.get("isResolved"):
+        return False
+    if m.get("resolution") not in ("YES", "NO"):
+        return False
+    q = (m.get("question") or "").strip()
+    if len(q) < 15 or len(q) > 180:
+        return False
+    liq = float(m.get("totalLiquidity") or 0)
+    vol = float(m.get("volume") or 0)
+    if liq < 50 and vol < 100:
+        return False
+    res_ms = m.get("resolutionTime") or m.get("closeTime")
+    created_ms = m.get("createdTime")
+    if not res_ms or not created_ms:
+        return False
+    # Must have been open long enough to have a meaningful T - 7d snapshot
+    if float(res_ms) - float(created_ms) < (HORIZON_DAYS + 2) * 86400 * 1000:
+        return False
+    return True
 
 
-def clamp(v: float, lo: float = 0.02, hi: float = 0.98) -> float:
-    return max(lo, min(hi, v))
-
-
-def logit(p: float) -> float:
-    p = clamp(p, 0.005, 0.995)
-    return math.log(p / (1.0 - p))
-
-
-def inv_logit(x: float) -> float:
-    return 1.0 / (1.0 + math.exp(-x))
-
-
-def synthesize_model_analysis(market: dict, domain: str, idx: int) -> dict:
+def fetch_horizon_price(market: dict):
     """
-    Produce structured base-rate vs model probability estimates and a Popperian
-    Conjecture -> Adversarial Critique -> Final Probability trace grounded in
-    the market question, liquidity, and probability regime.
+    Fetch the exact market probability at T - HORIZON_DAYS before
+    min(closeTime, resolutionTime) using Manifold's /v0/bets endpoint.
+    Returns (market, p_horizon, horizon_ms) or None if unavailable.
     """
-    q = market["question"].strip()
-    p_mkt = round(float(market["probability"]), 4)
-    liq = round(float(market.get("totalLiquidity") or 0), 1)
-    vol = round(float(market.get("volume") or 0), 1)
-    u = deterministic_hash_unit(market.get("id", q))
+    cid = market["id"]
+    res_ms = float(market.get("resolutionTime") or market.get("closeTime"))
+    close_ms = float(market.get("closeTime") or res_ms)
+    anchor_ms = min(res_ms, close_ms)
+    target_ms = int(anchor_ms - HORIZON_DAYS * 86400 * 1000)
 
-    # Domain reference-class base rate priors & structural market biases
-    domain_priors = {
-        "AI": {
-            "ref_class": "frontier capability & deployment timelines (2020-2026)",
-            "bias_note": "retail prediction markets often anchor on recent demo velocity while underweighting eval saturation and enterprise rollout friction",
-            "falsifier_a": "Independent benchmark verification on held-out private splits",
-            "falsifier_b": "Official release changelog or compute cluster capital filing",
-        },
-        "Energy": {
-            "ref_class": "physical infrastructure, grid interconnection, and commodity supply cycles",
-            "bias_note": "markets routinely underestimate permitting lead times and grid-queue bottlenecks while overreacting to spot price spikes",
-            "falsifier_a": "EIA / IEA quarterly capacity and generation telemetry",
-            "falsifier_b": "Binding EPC milestone, interconnection approval, or OPEC+ quota revision",
-        },
-        "Biotech": {
-            "ref_class": "FDA clinical-trial phase transition rates and biomedical milestones",
-            "bias_note": "crowd prices frequently overweight press-release surrogate endpoints and underweight Phase III efficacy attrition",
-            "falsifier_a": "Peer-reviewed primary endpoint readout on ClinicalTrials.gov",
-            "falsifier_b": "FDA PDUFA action letter or advisory committee vote",
-        },
-        "Macro": {
-            "ref_class": "post-1980 central bank policy cycles, CPI regimes, and sovereign macro releases",
-            "bias_note": "thin binary markets lag OIS/SOFR futures and over-extrapolate single-month headline prints",
-            "falsifier_a": "Official BLS, BEA, or FOMC statement release",
-            "falsifier_b": "Implied probability shift in 30-day Fed Funds or Treasury term structure",
-        },
-    }[domain]
+    url = f"{BASE_URL}/bets?contractId={urllib.parse.quote(cid)}&beforeTime={target_ms}&limit=1"
+    try:
+        bets = http_get_json(url, timeout=8)
+        if not bets:
+            return None
+        p_h = bets[0].get("probAfter")
+        if p_h is None:
+            return None
+        p_h = float(p_h)
+        if not (0.01 <= p_h <= 0.99):
+            return None
+        return (market, round(p_h, 4), int(anchor_ms))
+    except Exception:
+        return None
 
-    # Compute a grounded reference-class base rate
-    # Pull mildly toward historical base rates (0.28 - 0.62 depending on regime)
-    anchor = 0.22 if p_mkt < 0.20 else (0.76 if p_mkt > 0.80 else 0.44)
-    base_rate = round(clamp(0.55 * p_mkt + 0.45 * anchor + (u - 0.5) * 0.14, 0.04, 0.94), 3)
 
-    # Model log-odds adjustment: smaller divergence on deep liquidity, sharper edge on mispriced tails
-    liq_dampener = 0.65 if liq > 2000 else (0.85 if liq > 500 else 1.05)
-    raw_shift = (u - 0.48) * 0.72 * liq_dampener
-    # Ensure at least a subtle meaningful signal and preserve tail-risk discipline
-    if abs(raw_shift) < 0.12:
-        raw_shift = 0.16 if raw_shift >= 0 else -0.16
+def compute_metrics_for_records(records: list) -> dict:
+    """Compute exact Brier, Log-Loss, Skill Score, Tail-Bin (<15%/>85%), and decile bins."""
+    n = len(records)
+    if n == 0:
+        return {
+            "resolvedCount": 0,
+            "empiricalYesRate": 0.5,
+            "brierScore": 0.0,
+            "marketBrierScore": 0.0,
+            "logLoss": 0.0,
+            "marketLogLoss": 0.0,
+            "brierSkillPct": 0.0,
+            "tailBrierScore": None,
+            "marketTailBrierScore": None,
+            "tailEventCount": 0,
+            "calibrationBins": [],
+        }
 
-    # Encourage genuine tail representation if market is already near tails
-    if p_mkt <= 0.11:
-        model_prob = round(clamp(inv_logit(logit(p_mkt) + raw_shift * 0.7), 0.02, 0.18), 3)
-    elif p_mkt >= 0.89:
-        model_prob = round(clamp(inv_logit(logit(p_mkt) + raw_shift * 0.7), 0.82, 0.98), 3)
+    mod_brier = sum(brier_score(r["modelProb"], r["y"]) for r in records) / n
+    mkt_brier = sum(brier_score(r["marketProb"], r["y"]) for r in records) / n
+    mod_ll = sum(log_loss(r["modelProb"], r["y"]) for r in records) / n
+    mkt_ll = sum(log_loss(r["marketProb"], r["y"]) for r in records) / n
+    skill_pct = ((1.0 - (mod_brier / mkt_brier)) * 100.0) if mkt_brier > 0 else 0.0
+    yes_rate = sum(r["y"] for r in records) / n
+
+    # Tail-bin score (<15% / >85% based on market price at horizon)
+    tail_recs = [r for r in records if r["marketProb"] < TAIL_LOW or r["marketProb"] > TAIL_HIGH]
+    tail_n = len(tail_recs)
+    if tail_n > 0:
+        tail_mod_brier = round(sum(brier_score(r["modelProb"], r["y"]) for r in tail_recs) / tail_n, 4)
+        tail_mkt_brier = round(sum(brier_score(r["marketProb"], r["y"]) for r in tail_recs) / tail_n, 4)
     else:
-        model_prob = round(clamp(inv_logit(logit(p_mkt) + raw_shift), 0.03, 0.97), 3)
+        tail_mod_brier = None
+        tail_mkt_brier = None
 
-    edge = round(model_prob - p_mkt, 4)
-    is_tail = (model_prob < 0.10 or model_prob > 0.90 or p_mkt < 0.10 or p_mkt > 0.90)
-    direction = "above" if edge > 0 else "below"
-    edge_pp = abs(round(edge * 100, 1))
-    mkt_pct = round(p_mkt * 100, 1)
-    base_pct = round(base_rate * 100, 1)
-    mod_pct = round(model_prob * 100, 1)
-
-    conjecture = (
-        f"Outside-view anchor from {domain_priors['ref_class']} places the unadjusted "
-        f"base rate near {base_pct}%. Given current market liquidity (${liq:,.0f} mana depth, "
-        f"${vol:,.0f} cumulative volume), the market price of {mkt_pct}% embeds an active "
-        f"consensus hypothesis that we test against structural lead-lag indicators."
-    )
-
-    critique = (
-        f"Adversarial falsification check: {domain_priors['bias_note']}. "
-        f"{'Because this contract sits in a fat-tail regime (<10% or >90%), we apply Taleb tail-asymmetry damping to prevent overconfident log-loss blowups.' if is_tail else 'Stress-testing the base rate against inside-view catalysts suggests the crowd is misweighting path dependency by roughly ' + str(edge_pp) + ' percentage points.'}"
-    )
-
-    synthesis = (
-        f"After reconciling reference-class priors ({base_pct}%) with adversarial critique, "
-        f"the calibrated world-model settles at {mod_pct}% ({edge_pp} pp {direction} Manifold's "
-        f"{mkt_pct}%). Position sizing is capped by liquidity depth and tail-variance budget."
-    )
-
-    close_ms = market.get("closeTime")
-    close_iso = None
-    if close_ms:
-        try:
-            close_iso = datetime.fromtimestamp(close_ms / 1000.0, tz=timezone.utc).strftime("%Y-%m-%d")
-        except Exception:
-            close_iso = None
+    # Decile reliability bins (0-10%, ..., 90-100%)
+    bins = []
+    for i in range(10):
+        lo = i / 10.0
+        hi = (i + 1) / 10.0
+        label = f"{i * 10}-{(i + 1) * 10}%"
+        in_mod = [r for r in records if (lo <= r["modelProb"] < hi) or (i == 9 and r["modelProb"] == 1.0)]
+        in_mkt = [r for r in records if (lo <= r["marketProb"] < hi) or (i == 9 and r["marketProb"] == 1.0)]
+        if not in_mod and not in_mkt:
+            continue
+        mod_pred = sum(r["modelProb"] for r in in_mod) / len(in_mod) if in_mod else (lo + hi) / 2.0
+        mod_emp = sum(r["y"] for r in in_mod) / len(in_mod) if in_mod else None
+        mkt_pred = sum(r["marketProb"] for r in in_mkt) / len(in_mkt) if in_mkt else (lo + hi) / 2.0
+        mkt_emp = sum(r["y"] for r in in_mkt) / len(in_mkt) if in_mkt else None
+        bins.append({
+            "bin": label,
+            "predicted": round(mod_pred, 4),
+            "empirical": round(mod_emp, 4) if mod_emp is not None else None,
+            "marketPredicted": round(mkt_pred, 4),
+            "marketEmpirical": round(mkt_emp, 4) if mkt_emp is not None else None,
+            "n": len(in_mod),
+            "marketN": len(in_mkt),
+            "isTail": (i == 0 or i == 9),
+        })
 
     return {
-        "id": market.get("id", f"mkt-{idx+1}"),
-        "question": q,
-        "url": market.get("url") or f"https://manifold.markets/{market.get('creatorUsername', 'market')}/{market.get('slug', '')}",
-        "domain": domain,
-        "closeDate": close_iso or "2027-01-01",
-        "liquidity": liq,
-        "volume": vol,
-        "traderCount": int(market.get("uniqueBettorCount") or max(12, int(vol / 45))),
-        "source": market.get("_source", "live"),
-        "marketProb": round(p_mkt, 3),
-        "baseRate": base_rate,
-        "modelProb": model_prob,
-        "edge": round(edge, 3),
-        "tailEvent": is_tail,
-        "trace": {
-            "conjecture": conjecture,
-            "critique": critique,
-            "synthesis": synthesis,
-            "falsifiers": [
-                domain_priors["falsifier_a"],
-                domain_priors["falsifier_b"],
-            ],
-        },
+        "resolvedCount": n,
+        "empiricalYesRate": round(yes_rate, 4),
+        "brierScore": round(mod_brier, 4),
+        "marketBrierScore": round(mkt_brier, 4),
+        "logLoss": round(mod_ll, 4),
+        "marketLogLoss": round(mkt_ll, 4),
+        "brierSkillPct": round(skill_pct, 2),
+        "tailBrierScore": tail_mod_brier,
+        "marketTailBrierScore": tail_mkt_brier,
+        "tailEventCount": tail_n,
+        "calibrationBins": bins,
     }
 
 
-def fallback_markets_snapshot():
-    """Verified high-liquidity binary market snapshot used only if live API returns <20 clean items."""
-    return [
-        {"id": "fb-ai-1", "question": "Will an AI system score above 85% on ARC-AGI-2 verified private evaluation before 2028?", "url": "https://manifold.markets/browse?topic=ai", "probability": 0.42, "totalLiquidity": 3420, "volume": 18400, "uniqueBettorCount": 214, "closeTime": 1830297600000, "_domain": "AI", "_source": "fallback"},
-        {"id": "fb-ai-2", "question": "Will OpenAI release a frontier model trained with more than 10^27 FLOPs before end of 2027?", "url": "https://manifold.markets/browse?topic=ai", "probability": 0.64, "totalLiquidity": 2890, "volume": 14950, "uniqueBettorCount": 188, "closeTime": 1830297600000, "_domain": "AI", "_source": "fallback"},
-        {"id": "fb-ai-3", "question": "Will an open-weights model rank #1 on Chatbot Arena overall leaderboard at any point in 2027?", "url": "https://manifold.markets/browse?topic=ai", "probability": 0.37, "totalLiquidity": 2150, "volume": 11200, "uniqueBettorCount": 162, "closeTime": 1830297600000, "_domain": "AI", "_source": "fallback"},
-        {"id": "fb-ai-4", "question": "Will a fully autonomous AI agent earn over $1M in verified SaaS revenue without human code edits by 2028?", "url": "https://manifold.markets/browse?topic=ai", "probability": 0.08, "totalLiquidity": 1920, "volume": 9850, "uniqueBettorCount": 141, "closeTime": 1830297600000, "_domain": "AI", "_source": "fallback"},
-        {"id": "fb-ai-5", "question": "Will US federal legislation mandate pre-deployment safety audits for >10^26 FLOP models by 2028?", "url": "https://manifold.markets/browse?topic=ai", "probability": 0.29, "totalLiquidity": 1640, "volume": 8120, "uniqueBettorCount": 119, "closeTime": 1830297600000, "_domain": "AI", "_source": "fallback"},
-        {"id": "fb-en-1", "question": "Will global annual solar PV installations exceed 750 GW in 2027?", "url": "https://manifold.markets/browse?topic=energy", "probability": 0.61, "totalLiquidity": 2480, "volume": 12300, "uniqueBettorCount": 154, "closeTime": 1830297600000, "_domain": "Energy", "_source": "fallback"},
-        {"id": "fb-en-2", "question": "Will any private fusion company demonstrate net electricity to the grid before 2030?", "url": "https://manifold.markets/browse?topic=energy", "probability": 0.07, "totalLiquidity": 3100, "volume": 16700, "uniqueBettorCount": 203, "closeTime": 1893456000000, "_domain": "Energy", "_source": "fallback"},
-        {"id": "fb-en-3", "question": "Will Brent crude oil close above $110/bbl on any trading day in 2027?", "url": "https://manifold.markets/browse?topic=energy", "probability": 0.24, "totalLiquidity": 1870, "volume": 9400, "uniqueBettorCount": 127, "closeTime": 1830297600000, "_domain": "Energy", "_source": "fallback"},
-        {"id": "fb-en-4", "question": "Will a commercial Small Modular Reactor (SMR) begin grid-connected power generation in North America by 2029?", "url": "https://manifold.markets/browse?topic=energy", "probability": 0.19, "totalLiquidity": 2210, "volume": 10540, "uniqueBettorCount": 146, "closeTime": 1861920000000, "_domain": "Energy", "_source": "fallback"},
-        {"id": "fb-en-5", "question": "Will utility-scale LFP battery pack prices fall below $60/kWh globally by end of 2027?", "url": "https://manifold.markets/browse?topic=energy", "probability": 0.53, "totalLiquidity": 1590, "volume": 7380, "uniqueBettorCount": 98, "closeTime": 1830297600000, "_domain": "Energy", "_source": "fallback"},
-        {"id": "fb-bio-1", "question": "Will the FDA approve an oral non-peptide GLP-1 agonist for obesity before 2028?", "url": "https://manifold.markets/browse?topic=science", "probability": 0.78, "totalLiquidity": 2760, "volume": 14120, "uniqueBettorCount": 175, "closeTime": 1830297600000, "_domain": "Biotech", "_source": "fallback"},
-        {"id": "fb-bio-2", "question": "Will a CRISPR-based in-vivo therapy for cardiovascular disease receive FDA approval by 2028?", "url": "https://manifold.markets/browse?topic=science", "probability": 0.16, "totalLiquidity": 1950, "volume": 8840, "uniqueBettorCount": 118, "closeTime": 1830297600000, "_domain": "Biotech", "_source": "fallback"},
-        {"id": "fb-bio-3", "question": "Will a Phase III trial show >40% cognitive decline slowing in Alzheimer's patients by 2028?", "url": "https://manifold.markets/browse?topic=science", "probability": 0.21, "totalLiquidity": 1680, "volume": 7690, "uniqueBettorCount": 109, "closeTime": 1830297600000, "_domain": "Biotech", "_source": "fallback"},
-        {"id": "fb-bio-4", "question": "Will a personalized mRNA cancer vaccine receive full FDA approval for melanoma before 2028?", "url": "https://manifold.markets/browse?topic=science", "probability": 0.67, "totalLiquidity": 2340, "volume": 11900, "uniqueBettorCount": 149, "closeTime": 1830297600000, "_domain": "Biotech", "_source": "fallback"},
-        {"id": "fb-bio-5", "question": "Will WHO declare a Public Health Emergency of International Concern for H5N1 before 2028?", "url": "https://manifold.markets/browse?topic=science", "probability": 0.09, "totalLiquidity": 2610, "volume": 13450, "uniqueBettorCount": 191, "closeTime": 1830297600000, "_domain": "Biotech", "_source": "fallback"},
-        {"id": "fb-mac-1", "question": "Will the NBER declare a US recession starting at any point in 2027?", "url": "https://manifold.markets/browse?topic=economics", "probability": 0.31, "totalLiquidity": 4120, "volume": 24800, "uniqueBettorCount": 286, "closeTime": 1830297600000, "_domain": "Macro", "_source": "fallback"},
-        {"id": "fb-mac-2", "question": "Will US Core PCE inflation finish 2027 below 2.2% year-over-year?", "url": "https://manifold.markets/browse?topic=economics", "probability": 0.46, "totalLiquidity": 2980, "volume": 15600, "uniqueBettorCount": 194, "closeTime": 1830297600000, "_domain": "Macro", "_source": "fallback"},
-        {"id": "fb-mac-3", "question": "Will the Federal Reserve funds rate target upper bound be below 3.50% at end of 2027?", "url": "https://manifold.markets/browse?topic=economics", "probability": 0.54, "totalLiquidity": 3240, "volume": 17900, "uniqueBettorCount": 221, "closeTime": 1830297600000, "_domain": "Macro", "_source": "fallback"},
-        {"id": "fb-mac-4", "question": "Will US 10-year Treasury yield exceed 5.50% on any day in 2027?", "url": "https://manifold.markets/browse?topic=economics", "probability": 0.14, "totalLiquidity": 2110, "volume": 10300, "uniqueBettorCount": 135, "closeTime": 1830297600000, "_domain": "Macro", "_source": "fallback"},
-        {"id": "fb-mac-5", "question": "Will China official annual real GDP growth be reported below 4.0% for 2027?", "url": "https://manifold.markets/browse?topic=economics", "probability": 0.22, "totalLiquidity": 1840, "volume": 9120, "uniqueBettorCount": 124, "closeTime": 1830297600000, "_domain": "Macro", "_source": "fallback"},
-    ]
-
-
-def build_historical_benchmarks():
+def run_resolved_backtest():
     """
-    Structured historical calibration benchmarks across 312 resolved binary
-    forecasts (2023-2026) with explicit Taleb tail-risk decomposition (<10% / >90%).
+    Build-time quantitative backtest over real resolved binary Manifold markets
+    using /v0/markets and /v0/search-markets + /v0/bets at T - 7d horizon.
     """
-    return {
-        "resolvedCount": 312,
-        "window": "2023-Q1 to 2026-Q4",
-        "overall": {
-            "brierScore": 0.118,
-            "marketBrierScore": 0.142,
-            "logLoss": 0.364,
-            "marketLogLoss": 0.429,
-            "marketEdgePct": 16.9,
-            "talebTailScore": 0.041,
-            "marketTailScore": 0.079,
-            "tailEventCount": 58,
-            "tailBlowups": 1,
-            "calibrationBins": [
-                {"bin": "0-10%", "predicted": 0.055, "empirical": 0.052, "marketEmpirical": 0.091, "n": 29, "isTail": True},
-                {"bin": "10-20%", "predicted": 0.152, "empirical": 0.146, "marketEmpirical": 0.184, "n": 34, "isTail": False},
-                {"bin": "20-30%", "predicted": 0.248, "empirical": 0.235, "marketEmpirical": 0.278, "n": 38, "isTail": False},
-                {"bin": "30-40%", "predicted": 0.351, "empirical": 0.368, "marketEmpirical": 0.392, "n": 31, "isTail": False},
-                {"bin": "40-50%", "predicted": 0.449, "empirical": 0.441, "marketEmpirical": 0.415, "n": 27, "isTail": False},
-                {"bin": "50-60%", "predicted": 0.553, "empirical": 0.562, "marketEmpirical": 0.519, "n": 32, "isTail": False},
-                {"bin": "60-70%", "predicted": 0.648, "empirical": 0.633, "marketEmpirical": 0.594, "n": 30, "isTail": False},
-                {"bin": "70-80%", "predicted": 0.746, "empirical": 0.758, "marketEmpirical": 0.701, "n": 33, "isTail": False},
-                {"bin": "80-90%", "predicted": 0.847, "empirical": 0.839, "marketEmpirical": 0.793, "n": 29, "isTail": False},
-                {"bin": "90-100%", "predicted": 0.946, "empirical": 0.931, "marketEmpirical": 0.878, "n": 29, "isTail": True},
-            ],
-        },
-        "byDomain": {
-            "AI": {
-                "resolvedCount": 88,
-                "brierScore": 0.112,
-                "marketBrierScore": 0.145,
-                "logLoss": 0.349,
-                "marketLogLoss": 0.438,
-                "marketEdgePct": 22.8,
-                "talebTailScore": 0.036,
-                "marketTailScore": 0.084,
-                "tailEventCount": 17,
-                "calibrationBins": [
-                    {"bin": "0-10%", "predicted": 0.06, "empirical": 0.058, "marketEmpirical": 0.11, "n": 9, "isTail": True},
-                    {"bin": "10-20%", "predicted": 0.15, "empirical": 0.14, "marketEmpirical": 0.19, "n": 10, "isTail": False},
-                    {"bin": "20-30%", "predicted": 0.25, "empirical": 0.22, "marketEmpirical": 0.29, "n": 11, "isTail": False},
-                    {"bin": "30-40%", "predicted": 0.35, "empirical": 0.36, "marketEmpirical": 0.41, "n": 9, "isTail": False},
-                    {"bin": "40-50%", "predicted": 0.45, "empirical": 0.44, "marketEmpirical": 0.42, "n": 8, "isTail": False},
-                    {"bin": "50-60%", "predicted": 0.55, "empirical": 0.58, "marketEmpirical": 0.51, "n": 9, "isTail": False},
-                    {"bin": "60-70%", "predicted": 0.65, "empirical": 0.63, "marketEmpirical": 0.57, "n": 8, "isTail": False},
-                    {"bin": "70-80%", "predicted": 0.75, "empirical": 0.77, "marketEmpirical": 0.69, "n": 8, "isTail": False},
-                    {"bin": "80-90%", "predicted": 0.85, "empirical": 0.86, "marketEmpirical": 0.78, "n": 8, "isTail": False},
-                    {"bin": "90-100%", "predicted": 0.94, "empirical": 0.94, "marketEmpirical": 0.86, "n": 8, "isTail": True},
-                ],
-            },
-            "Energy": {
-                "resolvedCount": 74,
-                "brierScore": 0.121,
-                "marketBrierScore": 0.139,
-                "logLoss": 0.371,
-                "marketLogLoss": 0.422,
-                "marketEdgePct": 12.9,
-                "talebTailScore": 0.044,
-                "marketTailScore": 0.075,
-                "tailEventCount": 14,
-                "calibrationBins": [
-                    {"bin": "0-10%", "predicted": 0.05, "empirical": 0.045, "marketEmpirical": 0.08, "n": 7, "isTail": True},
-                    {"bin": "10-20%", "predicted": 0.15, "empirical": 0.16, "marketEmpirical": 0.19, "n": 8, "isTail": False},
-                    {"bin": "20-30%", "predicted": 0.25, "empirical": 0.26, "marketEmpirical": 0.28, "n": 9, "isTail": False},
-                    {"bin": "30-40%", "predicted": 0.35, "empirical": 0.34, "marketEmpirical": 0.38, "n": 7, "isTail": False},
-                    {"bin": "40-50%", "predicted": 0.45, "empirical": 0.43, "marketEmpirical": 0.40, "n": 7, "isTail": False},
-                    {"bin": "50-60%", "predicted": 0.55, "empirical": 0.54, "marketEmpirical": 0.52, "n": 8, "isTail": False},
-                    {"bin": "60-70%", "predicted": 0.65, "empirical": 0.66, "marketEmpirical": 0.61, "n": 7, "isTail": False},
-                    {"bin": "70-80%", "predicted": 0.75, "empirical": 0.74, "marketEmpirical": 0.70, "n": 7, "isTail": False},
-                    {"bin": "80-90%", "predicted": 0.85, "empirical": 0.83, "marketEmpirical": 0.79, "n": 7, "isTail": False},
-                    {"bin": "90-100%", "predicted": 0.95, "empirical": 0.92, "marketEmpirical": 0.88, "n": 7, "isTail": True},
-                ],
-            },
-            "Biotech": {
-                "resolvedCount": 72,
-                "brierScore": 0.125,
-                "marketBrierScore": 0.149,
-                "logLoss": 0.382,
-                "marketLogLoss": 0.447,
-                "marketEdgePct": 16.1,
-                "talebTailScore": 0.047,
-                "marketTailScore": 0.088,
-                "tailEventCount": 14,
-                "calibrationBins": [
-                    {"bin": "0-10%", "predicted": 0.06, "empirical": 0.065, "marketEmpirical": 0.10, "n": 7, "isTail": True},
-                    {"bin": "10-20%", "predicted": 0.15, "empirical": 0.14, "marketEmpirical": 0.18, "n": 8, "isTail": False},
-                    {"bin": "20-30%", "predicted": 0.25, "empirical": 0.23, "marketEmpirical": 0.27, "n": 9, "isTail": False},
-                    {"bin": "30-40%", "predicted": 0.35, "empirical": 0.38, "marketEmpirical": 0.40, "n": 7, "isTail": False},
-                    {"bin": "40-50%", "predicted": 0.45, "empirical": 0.46, "marketEmpirical": 0.42, "n": 6, "isTail": False},
-                    {"bin": "50-60%", "predicted": 0.55, "empirical": 0.57, "marketEmpirical": 0.51, "n": 7, "isTail": False},
-                    {"bin": "60-70%", "predicted": 0.65, "empirical": 0.62, "marketEmpirical": 0.58, "n": 7, "isTail": False},
-                    {"bin": "70-80%", "predicted": 0.75, "empirical": 0.76, "marketEmpirical": 0.70, "n": 8, "isTail": False},
-                    {"bin": "80-90%", "predicted": 0.85, "empirical": 0.82, "marketEmpirical": 0.78, "n": 6, "isTail": False},
-                    {"bin": "90-100%", "predicted": 0.94, "empirical": 0.91, "marketEmpirical": 0.86, "n": 7, "isTail": True},
-                ],
-            },
-            "Macro": {
-                "resolvedCount": 78,
-                "brierScore": 0.115,
-                "marketBrierScore": 0.136,
-                "logLoss": 0.356,
-                "marketLogLoss": 0.411,
-                "marketEdgePct": 15.4,
-                "talebTailScore": 0.039,
-                "marketTailScore": 0.071,
-                "tailEventCount": 13,
-                "calibrationBins": [
-                    {"bin": "0-10%", "predicted": 0.05, "empirical": 0.042, "marketEmpirical": 0.08, "n": 6, "isTail": True},
-                    {"bin": "10-20%", "predicted": 0.15, "empirical": 0.15, "marketEmpirical": 0.17, "n": 8, "isTail": False},
-                    {"bin": "20-30%", "predicted": 0.25, "empirical": 0.24, "marketEmpirical": 0.27, "n": 9, "isTail": False},
-                    {"bin": "30-40%", "predicted": 0.35, "empirical": 0.39, "marketEmpirical": 0.38, "n": 8, "isTail": False},
-                    {"bin": "40-50%", "predicted": 0.45, "empirical": 0.44, "marketEmpirical": 0.42, "n": 6, "isTail": False},
-                    {"bin": "50-60%", "predicted": 0.55, "empirical": 0.56, "marketEmpirical": 0.53, "n": 8, "isTail": False},
-                    {"bin": "60-70%", "predicted": 0.65, "empirical": 0.63, "marketEmpirical": 0.61, "n": 8, "isTail": False},
-                    {"bin": "70-80%", "predicted": 0.75, "empirical": 0.76, "marketEmpirical": 0.71, "n": 10, "isTail": False},
-                    {"bin": "80-90%", "predicted": 0.85, "empirical": 0.85, "marketEmpirical": 0.81, "n": 8, "isTail": False},
-                    {"bin": "90-100%", "predicted": 0.95, "empirical": 0.95, "marketEmpirical": 0.90, "n": 7, "isTail": True},
-                ],
-            },
-        },
-    }
-
-
-def fetch_live_markets():
     seen_ids = set()
-    by_domain = {"AI": [], "Energy": [], "Biotech": [], "Macro": []}
+    candidates_by_domain = {d: [] for d in DOMAINS}
+
+    # 1. Sample from /v0/markets (general feed)
+    try:
+        general = http_get_json(f"{BASE_URL}/markets?limit=200", timeout=10)
+        for m in general:
+            if not is_clean_resolved_binary(m):
+                continue
+            dom = classify_domain(m.get("question", ""))
+            if dom and m["id"] not in seen_ids:
+                seen_ids.add(m["id"])
+                candidates_by_domain[dom].append(m)
+    except Exception as exc:
+        print(f"[warn] Backtest /v0/markets failed: {exc}", file=sys.stderr)
+
+    # 2. Query resolved binary markets per domain sorted by liquidity
+    for dom, terms in DOMAIN_SEARCH_TERMS.items():
+        for term in terms:
+            if len(candidates_by_domain[dom]) >= 45:
+                break
+            qs = urllib.parse.urlencode({
+                "term": term,
+                "sort": "liquidity",
+                "filter": "resolved",
+                "contractType": "BINARY",
+                "limit": 30,
+            })
+            try:
+                batch = http_get_json(f"{BASE_URL}/search-markets?{qs}", timeout=10)
+                for m in batch:
+                    if not is_clean_resolved_binary(m):
+                        continue
+                    detected = classify_domain(m.get("question", ""))
+                    if detected == dom and m["id"] not in seen_ids:
+                        seen_ids.add(m["id"])
+                        candidates_by_domain[dom].append(m)
+            except Exception as exc:
+                print(f"[warn] Backtest search '{term}' failed: {exc}", file=sys.stderr)
+
+    # Select top 35 highest-liquidity candidates per domain (up to 140 total) to fetch T-7d bets
+    to_fetch = []
+    for dom in DOMAINS:
+        ranked = sorted(
+            candidates_by_domain[dom],
+            key=lambda x: float(x.get("totalLiquidity") or 0) * 2 + float(x.get("volume") or 0),
+            reverse=True,
+        )[:35]
+        for m in ranked:
+            to_fetch.append((dom, m))
+
+    records = []
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        futures = {pool.submit(fetch_horizon_price, m): dom for dom, m in to_fetch}
+        for fut in as_completed(futures):
+            dom = futures[fut]
+            res = fut.result()
+            if not res:
+                continue
+            m, p_mkt, anchor_ms = res
+            y = 1 if m["resolution"] == "YES" else 0
+            p_mod = apply_rule(p_mkt)
+            records.append({
+                "id": m["id"],
+                "domain": dom,
+                "marketProb": p_mkt,
+                "modelProb": p_mod,
+                "y": y,
+                "resolvedMs": anchor_ms,
+            })
+
+    if not records:
+        raise RuntimeError("Backtest returned 0 resolved markets from Manifold API.")
+
+    min_ms = min(r["resolvedMs"] for r in records)
+    max_ms = max(r["resolvedMs"] for r in records)
+    start_str = datetime.fromtimestamp(min_ms / 1000.0, tz=timezone.utc).strftime("%Y-%m")
+    end_str = datetime.fromtimestamp(max_ms / 1000.0, tz=timezone.utc).strftime("%Y-%m")
+
+    overall = compute_metrics_for_records(records)
+    by_domain = {}
+    for dom in DOMAINS:
+        dom_recs = [r for r in records if r["domain"] == dom]
+        by_domain[dom] = compute_metrics_for_records(dom_recs)
+
+    return {
+        "resolvedCount": len(records),
+        "window": f"{start_str} to {end_str}",
+        "horizonDays": HORIZON_DAYS,
+        "rule": RULE_SPEC,
+        "overall": overall,
+        "byDomain": by_domain,
+    }
+
+
+def fetch_live_markets(now_ms: int, current_year: int):
+    seen_ids = set()
+    by_domain = {d: [] for d in DOMAINS}
     api_status = "live"
 
-    # Step 1a: Primary endpoint required by spec
     try:
-        raw = http_get_json(f"{BASE_URL}/markets?limit=60", timeout=8)
+        raw = http_get_json(f"{BASE_URL}/markets?limit=100", timeout=10)
         for m in raw:
-            if not is_clean_binary(m):
+            if not is_clean_open_binary(m, now_ms, current_year):
                 continue
             dom = classify_domain(m.get("question", ""))
             if dom and m["id"] not in seen_ids:
@@ -426,26 +474,25 @@ def fetch_live_markets():
                 seen_ids.add(m["id"])
                 by_domain[dom].append(m)
     except Exception as exc:
-        print(f"[warn] Primary /v0/markets?limit=60 failed: {exc}", file=sys.stderr)
-        api_status = "fallback"
+        print(f"[warn] Primary /v0/markets?limit=100 failed: {exc}", file=sys.stderr)
+        api_status = "error"
 
-    # Step 1b: Top up high-liquidity open binary markets per domain via search-markets
     if api_status == "live":
         for dom, terms in DOMAIN_SEARCH_TERMS.items():
             for term in terms:
-                if len(by_domain[dom]) >= 8:
+                if len(by_domain[dom]) >= 10:
                     break
                 qs = urllib.parse.urlencode({
                     "term": term,
                     "sort": "liquidity",
                     "filter": "open",
                     "contractType": "BINARY",
-                    "limit": 20,
+                    "limit": 25,
                 })
                 try:
-                    batch = http_get_json(f"{BASE_URL}/search-markets?{qs}", timeout=8)
+                    batch = http_get_json(f"{BASE_URL}/search-markets?{qs}", timeout=10)
                     for m in batch:
-                        if not is_clean_binary(m):
+                        if not is_clean_open_binary(m, now_ms, current_year):
                             continue
                         detected = classify_domain(m.get("question", ""))
                         if detected == dom and m["id"] not in seen_ids:
@@ -453,56 +500,186 @@ def fetch_live_markets():
                             seen_ids.add(m["id"])
                             by_domain[dom].append(m)
                 except Exception as exc:
-                    print(f"[warn] Search '{term}' failed: {exc}", file=sys.stderr)
+                    print(f"[warn] Live search '{term}' failed: {exc}", file=sys.stderr)
 
-    # Sort each domain by liquidity + volume descending and select up to 5 per domain
     selected = []
-    for dom in ["AI", "Energy", "Biotech", "Macro"]:
+    for dom in DOMAINS:
         ranked = sorted(
             by_domain[dom],
-            key=lambda x: (float(x.get("totalLiquidity") or 0) * 2 + float(x.get("volume") or 0)),
+            key=lambda x: float(x.get("totalLiquidity") or 0) * 2 + float(x.get("volume") or 0),
             reverse=True,
         )
         for item in ranked[:5]:
             selected.append((dom, item))
 
-    # Top up from fallback snapshot if fewer than 20 clean live markets were found
-    if len(selected) < 20:
-        counts = {d: sum(1 for dom, _ in selected if dom == d) for d in ["AI", "Energy", "Biotech", "Macro"]}
-        for fb in fallback_markets_snapshot():
-            if len(selected) >= 20:
-                break
-            d = fb["_domain"]
-            if counts[d] < 5 and fb["id"] not in seen_ids:
-                seen_ids.add(fb["id"])
-                counts[d] += 1
-                selected.append((d, fb))
+    live_count = len(selected)
+    return selected[:20], "live" if live_count > 0 else "error", live_count
 
-    live_count = sum(1 for _, m in selected if m.get("_source") == "live")
-    mode = "live" if live_count == len(selected) else ("hybrid" if live_count > 0 else "fallback")
-    return selected[:20], mode, live_count
+
+def build_live_market_record(market: dict, domain: str, domain_bench: dict, idx: int) -> dict:
+    """
+    Apply the exact same pre-registered logistic extremization rule (k = 1.15)
+    to a live Manifold market and construct a transparent calculation trace.
+    """
+    q = market["question"].strip()
+    p_mkt = round(clamp(float(market["probability"]), 0.01, 0.99), 4)
+    p_mod = apply_rule(p_mkt)
+    edge = round(p_mod - p_mkt, 4)
+
+    liq = round(float(market.get("totalLiquidity") or 0), 1)
+    vol = round(float(market.get("volume") or 0), 1)
+    is_tail = (p_mkt < TAIL_LOW or p_mkt > TAIL_HIGH or p_mod < TAIL_LOW or p_mod > TAIL_HIGH)
+
+    domain_base_rate = domain_bench.get("empiricalYesRate", 0.5)
+    domain_n = domain_bench.get("resolvedCount", 0)
+    tpl = DOMAIN_CHECKLIST_TEMPLATES[domain]
+
+    lo_mkt = logit(p_mkt)
+    lo_mod = EXTREMIZATION_K * lo_mkt
+    direction = "above" if edge >= 0 else "below"
+    edge_pp = abs(round(edge * 100, 1))
+    mkt_pct = round(p_mkt * 100, 1)
+    mod_pct = round(p_mod * 100, 1)
+    base_pct = round(domain_base_rate * 100, 1)
+
+    rule_computation = (
+        f"Market price p = {mkt_pct}% maps to log-odds {lo_mkt:+.3f}. "
+        f"Applying the pre-registered extremization factor k = {EXTREMIZATION_K} gives "
+        f"log-odds {lo_mod:+.3f}, which maps back via sigmoid to {mod_pct}% "
+        f"({edge_pp} pp {direction} Manifold)."
+    )
+
+    base_rate_context = (
+        f"In the {domain} resolved backtest sample (n = {domain_n} binary markets), "
+        f"the empirical YES resolution rate is {base_pct}%. Current contract depth is "
+        f"${liq:,.0f} liquidity and ${vol:,.0f} cumulative volume."
+    )
+
+    qualitative_template = (
+        f"Illustrative domain checklist ({tpl['ref_class']} — template, not a bespoke thesis): "
+        f"{tpl['checklist_note']}"
+    )
+
+    close_ms = market.get("closeTime")
+    close_iso = datetime.fromtimestamp(float(close_ms) / 1000.0, tz=timezone.utc).strftime("%Y-%m-%d")
+
+    return {
+        "id": market.get("id", f"mkt-{idx+1}"),
+        "question": q,
+        "url": market.get("url") or f"https://manifold.markets/{market.get('creatorUsername', 'market')}/{market.get('slug', '')}",
+        "domain": domain,
+        "closeDate": close_iso,
+        "liquidity": liq,
+        "volume": vol,
+        "traderCount": int(market.get("uniqueBettorCount") or 0),
+        "source": "live",
+        "marketProb": round(p_mkt, 4),
+        "domainBaseRate": round(domain_base_rate, 4),
+        "modelProb": round(p_mod, 4),
+        "edge": round(edge, 4),
+        "tailEvent": is_tail,
+        "trace": {
+            "ruleComputation": rule_computation,
+            "baseRateContext": base_rate_context,
+            "qualitativeTemplate": qualitative_template,
+            "falsifiers": tpl["falsifiers"],
+        },
+    }
+
+
+def update_forward_ledger(ledger_path: Path, markets: list, updated_at: str) -> dict:
+    """
+    Maintain append-only forward ledger starting 26 Nov 2026.
+    Never modifies existing logged probabilities; only appends unseen contracts.
+    """
+    if ledger_path.exists():
+        ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+    else:
+        ledger = {
+            "schemaVersion": "1.0",
+            "startDate": "2026-11-26",
+            "startDateLabel": "26 Nov 2026",
+            "ruleId": RULE_SPEC["id"],
+            "ruleFormula": RULE_SPEC["formula"],
+            "appendOnly": True,
+            "entries": [],
+        }
+
+    existing_ids = {e["id"] for e in ledger.get("entries", [])}
+    for m in markets:
+        if m["id"] not in existing_ids:
+            ledger["entries"].append({
+                "id": m["id"],
+                "question": m["question"],
+                "domain": m["domain"],
+                "url": m["url"],
+                "loggedAt": updated_at,
+                "closeDate": m["closeDate"],
+                "marketProbAtLog": m["marketProb"],
+                "modelProbAtLog": m["modelProb"],
+                "status": "open",
+                "resolution": None,
+                "resolvedAt": None,
+            })
+            existing_ids.add(m["id"])
+
+    resolved_count = sum(1 for e in ledger["entries"] if e.get("status") == "resolved")
+    open_count = sum(1 for e in ledger["entries"] if e.get("status") == "open")
+    ledger["resolvedCount"] = resolved_count
+    ledger["openCount"] = open_count
+    ledger["summary"] = f"Track record starts {ledger['startDateLabel']}; {resolved_count} resolved"
+
+    ledger_path.parent.mkdir(parents=True, exist_ok=True)
+    ledger_path.write_text(json.dumps(ledger, indent=2) + "\n", encoding="utf-8")
+    return {
+        "startDate": ledger["startDate"],
+        "startDateLabel": ledger["startDateLabel"],
+        "resolvedCount": resolved_count,
+        "openCount": open_count,
+        "summary": ledger["summary"],
+        "ledgerPath": "data/forward_ledger.json",
+    }
 
 
 def main():
     root = Path(__file__).resolve().parent.parent
     out_path = root / "public" / "data" / "markets.json"
+    ledger_path = root / "data" / "forward_ledger.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    selected, mode, live_count = fetch_live_markets()
-    markets = [synthesize_model_analysis(m, dom, i) for i, (dom, m) in enumerate(selected)]
+    now_dt = datetime.now(timezone.utc)
+    now_ms = int(now_dt.timestamp() * 1000)
+    current_year = now_dt.year
+    updated_at = now_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
-    # Compute summary telemetry on the 20 active markets
-    avg_abs_edge = round(sum(abs(m["edge"]) for m in markets) / len(markets), 4)
+    print("Running build-time backtest on resolved Manifold binary markets...")
+    backtest = run_resolved_backtest()
+    print(
+        f"Backtest complete: n={backtest['resolvedCount']} ({backtest['window']}), "
+        f"Model Brier={backtest['overall']['brierScore']:.4f} vs Market={backtest['overall']['marketBrierScore']:.4f} "
+        f"(Skill {backtest['overall']['brierSkillPct']:+.2f}%), "
+        f"Tail (<15%/>85%, n={backtest['overall']['tailEventCount']}): "
+        f"Model={backtest['overall']['tailBrierScore']} vs Market={backtest['overall']['marketTailBrierScore']}"
+    )
+
+    print("Fetching live non-expired Manifold binary markets...")
+    selected, mode, live_count = fetch_live_markets(now_ms, current_year)
+    markets = [
+        build_live_market_record(m, dom, backtest["byDomain"][dom], i)
+        for i, (dom, m) in enumerate(selected)
+    ]
+
+    forward_ledger = update_forward_ledger(ledger_path, markets, updated_at)
+
+    avg_abs_edge = round(sum(abs(m["edge"]) for m in markets) / len(markets), 4) if markets else 0.0
     tail_active = sum(1 for m in markets if m["tailEvent"])
     total_liquidity = round(sum(m["liquidity"] for m in markets), 1)
-
-    updated_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     payload = {
         "updated_at": updated_at,
         "meta": {
-            "title": "Calibrated World-Model & Forecasting Engine",
-            "version": "2.0.0",
+            "title": "Calibrated Forecasting Engine",
+            "version": "3.0.0",
             "author": "Mohammed KM",
             "generatedAt": updated_at,
             "updated_at": updated_at,
@@ -513,14 +690,17 @@ def main():
             "activeTailMarkets": tail_active,
             "avgAbsEdge": avg_abs_edge,
             "totalLiquidity": total_liquidity,
-            "sourceEndpoint": f"{BASE_URL}/markets?limit=60",
+            "sourceEndpoint": f"{BASE_URL}/markets",
         },
-        "benchmarks": build_historical_benchmarks(),
+        "rule": RULE_SPEC,
+        "forwardLedger": forward_ledger,
+        "backtest": backtest,
         "markets": markets,
     }
 
     out_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
-    print(f"Wrote {len(markets)} markets ({live_count} live, mode={mode}) to {out_path}")
+    print(f"Wrote {len(markets)} live markets ({live_count} live) and backtest (n={backtest['resolvedCount']}) to {out_path}")
+    print(f"Updated append-only forward ledger at {ledger_path}: {forward_ledger['summary']} ({forward_ledger['openCount']} open tracked)")
 
 
 if __name__ == "__main__":
