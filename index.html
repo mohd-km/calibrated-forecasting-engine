@@ -179,7 +179,7 @@
                 <svg id="calibration-svg" viewBox="0 0 640 400" role="img" aria-label="Calibration Curve"></svg>
               </div>
               <div id="bin-inspector" class="bin-inspector">
-                Hover or focus any decile point on the curve to inspect bin calibration error and sample size.
+                Tap, hover, or focus any decile point on the curve to inspect bin calibration error and sample size.
               </div>
             </div>
 
@@ -188,19 +188,21 @@
                 <h3>Domain Calibration Breakdown</h3>
                 <span class="panel-sub">Click any row to filter dashboard</span>
               </div>
-              <table class="mini-table" id="domain-breakdown-table">
-                <thead>
-                  <tr>
-                    <th>Domain</th>
-                    <th class="num">n</th>
-                    <th class="num">Brier</th>
-                    <th class="num">Log-Loss</th>
-                    <th class="num">Tail</th>
-                    <th class="num">Edge</th>
-                  </tr>
-                </thead>
-                <tbody id="domain-breakdown-body"></tbody>
-              </table>
+              <div class="table-scroll-x">
+                <table class="mini-table" id="domain-breakdown-table">
+                  <thead>
+                    <tr>
+                      <th>Domain</th>
+                      <th class="num">n</th>
+                      <th class="num">Brier</th>
+                      <th class="num">Log-Loss</th>
+                      <th class="num">Tail</th>
+                      <th class="num">Edge</th>
+                    </tr>
+                  </thead>
+                  <tbody id="domain-breakdown-body"></tbody>
+                </table>
+              </div>
               <div class="methodology-box">
                 <div class="meth-title">Why Separate Tail-Risk Accounting?</div>
                 <p>
@@ -401,17 +403,19 @@
                 Adjust the slider to test calibration vs. overconfidence.
               </div>
 
-              <table class="score-table">
-                <thead>
-                  <tr>
-                    <th>Scenario / Metric</th>
-                    <th class="num">Your Forecast</th>
-                    <th class="num">World-Model</th>
-                    <th class="num">Manifold</th>
-                  </tr>
-                </thead>
-                <tbody id="sandbox-score-body"></tbody>
-              </table>
+              <div class="table-scroll-x">
+                <table class="score-table">
+                  <thead>
+                    <tr>
+                      <th>Scenario / Metric</th>
+                      <th class="num">Your Forecast</th>
+                      <th class="num">World-Model</th>
+                      <th class="num">Manifold</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sandbox-score-body"></tbody>
+                </table>
+              </div>
             </div>
 
             <div class="panel sandbox-chart-panel">

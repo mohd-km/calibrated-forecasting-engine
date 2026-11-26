@@ -220,8 +220,8 @@ function renderCalibrationCurve() {
     parts.push(`
       <rect x="${x(0)}" y="${pad.top}" width="${x(0.1) - x(0)}" height="${plotH}" fill="rgba(226,168,86,0.09)" />
       <rect x="${x(0.9)}" y="${pad.top}" width="${x(1.0) - x(0.9)}" height="${plotH}" fill="rgba(226,168,86,0.09)" />
-      <text x="${x(0.05)}" y="${pad.top + 14}" text-anchor="middle" fill="#e2a856" font-family="JetBrains Mono" font-size="9.5">TAIL</text>
-      <text x="${x(0.95)}" y="${pad.top + 14}" text-anchor="middle" fill="#e2a856" font-family="JetBrains Mono" font-size="9.5">TAIL</text>
+      <text x="${x(0.05)}" y="${pad.top + 15}" text-anchor="middle" fill="#e2a856" font-family="JetBrains Mono" font-size="10.5">TAIL</text>
+      <text x="${x(0.95)}" y="${pad.top + 15}" text-anchor="middle" fill="#e2a856" font-family="JetBrains Mono" font-size="10.5">TAIL</text>
     `);
   }
 
@@ -230,13 +230,13 @@ function renderCalibrationCurve() {
     const gy = y(t);
     parts.push(`<line x1="${pad.left}" y1="${gy}" x2="${W - pad.right}" y2="${gy}" stroke="#1c2432" stroke-width="1" />`);
     parts.push(`<line x1="${gx}" y1="${pad.top}" x2="${gx}" y2="${H - pad.bottom}" stroke="#1c2432" stroke-width="1" />`);
-    parts.push(`<text x="${gx}" y="${H - pad.bottom + 18}" text-anchor="middle" fill="#7c8aa0" font-family="JetBrains Mono" font-size="10.5">${Math.round(t * 100)}%</text>`);
-    parts.push(`<text x="${pad.left - 10}" y="${gy + 3.5}" text-anchor="end" fill="#7c8aa0" font-family="JetBrains Mono" font-size="10.5">${Math.round(t * 100)}%</text>`);
+    parts.push(`<text x="${gx}" y="${H - pad.bottom + 18}" text-anchor="middle" fill="#7c8aa0" font-family="JetBrains Mono" font-size="11.5">${Math.round(t * 100)}%</text>`);
+    parts.push(`<text x="${pad.left - 10}" y="${gy + 4}" text-anchor="end" fill="#7c8aa0" font-family="JetBrains Mono" font-size="11.5">${Math.round(t * 100)}%</text>`);
   });
 
   // Axes labels
-  parts.push(`<text x="${pad.left + plotW / 2}" y="${H - 12}" text-anchor="middle" fill="#93a0b4" font-family="Inter" font-size="11.5">Predicted Probability</text>`);
-  parts.push(`<text x="16" y="${pad.top + plotH / 2}" text-anchor="middle" fill="#93a0b4" font-family="Inter" font-size="11.5" transform="rotate(-90 16 ${pad.top + plotH / 2})">Empirical Frequency</text>`);
+  parts.push(`<text x="${pad.left + plotW / 2}" y="${H - 12}" text-anchor="middle" fill="#93a0b4" font-family="Inter" font-size="12.5">Predicted Probability</text>`);
+  parts.push(`<text x="16" y="${pad.top + plotH / 2}" text-anchor="middle" fill="#93a0b4" font-family="Inter" font-size="12.5" transform="rotate(-90 16 ${pad.top + plotH / 2})">Empirical Frequency</text>`);
 
   // Perfect calibration diagonal
   parts.push(`<line x1="${x(0)}" y1="${y(0)}" x2="${x(1)}" y2="${y(1)}" stroke="#4c5a70" stroke-width="1.4" stroke-dasharray="4 4" />`);
@@ -262,7 +262,7 @@ function renderCalibrationCurve() {
     const fill = d.isTail ? '#e2a856' : '#58c4dc';
     parts.push(`
       <g class="cal-point" data-bin-index="${idx}" tabindex="0" style="cursor:pointer">
-        <circle cx="${cx}" cy="${cy}" r="${r + 5}" fill="transparent" />
+        <circle cx="${cx}" cy="${cy}" r="${r + 9}" fill="transparent" />
         <circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="#0a0c10" stroke-width="1.8" />
       </g>
     `);
@@ -287,6 +287,7 @@ function renderCalibrationCurve() {
     const idx = Number(g.dataset.binIndex);
     g.addEventListener('mouseenter', () => showBin(bins[idx]));
     g.addEventListener('focus', () => showBin(bins[idx]));
+    g.addEventListener('click', () => showBin(bins[idx]));
   });
 }
 
@@ -512,17 +513,17 @@ function renderSandboxSvg(pUser, pMod, pMkt) {
   [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0].forEach((val) => {
     const gy = y(val);
     parts.push(`<line x1="${pad.left}" y1="${gy}" x2="${W - pad.right}" y2="${gy}" stroke="#1c2432" stroke-width="1" />`);
-    parts.push(`<text x="${pad.left - 8}" y="${gy + 3.5}" text-anchor="end" fill="#7c8aa0" font-family="JetBrains Mono" font-size="10">${val.toFixed(1)}</text>`);
+    parts.push(`<text x="${pad.left - 8}" y="${gy + 4}" text-anchor="end" fill="#7c8aa0" font-family="JetBrains Mono" font-size="11">${val.toFixed(1)}</text>`);
   });
 
   [0, 0.25, 0.5, 0.75, 1.0].forEach((t) => {
     const gx = x(t);
     parts.push(`<line x1="${gx}" y1="${pad.top}" x2="${gx}" y2="${H - pad.bottom}" stroke="#1c2432" stroke-width="1" />`);
-    parts.push(`<text x="${gx}" y="${H - pad.bottom + 16}" text-anchor="middle" fill="#7c8aa0" font-family="JetBrains Mono" font-size="10">${Math.round(t * 100)}%</text>`);
+    parts.push(`<text x="${gx}" y="${H - pad.bottom + 16}" text-anchor="middle" fill="#7c8aa0" font-family="JetBrains Mono" font-size="11">${Math.round(t * 100)}%</text>`);
   });
 
-  parts.push(`<text x="${pad.left + plotW / 2}" y="${H - 10}" text-anchor="middle" fill="#93a0b4" font-family="Inter" font-size="11">Forecast Probability</text>`);
-  parts.push(`<text x="14" y="${pad.top + plotH / 2}" text-anchor="middle" fill="#93a0b4" font-family="Inter" font-size="11" transform="rotate(-90 14 ${pad.top + plotH / 2})">Log-Loss (nats)</text>`);
+  parts.push(`<text x="${pad.left + plotW / 2}" y="${H - 10}" text-anchor="middle" fill="#93a0b4" font-family="Inter" font-size="12">Forecast Probability</text>`);
+  parts.push(`<text x="14" y="${pad.top + plotH / 2}" text-anchor="middle" fill="#93a0b4" font-family="Inter" font-size="12" transform="rotate(-90 14 ${pad.top + plotH / 2})">Log-Loss (nats)</text>`);
 
   // Curves: Loss if YES, Loss if NO, Expected Loss under Model p*
   const yesPts = [];
