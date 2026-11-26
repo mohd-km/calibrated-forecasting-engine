@@ -6,8 +6,10 @@ An editorial quantitative forecasting dashboard that benchmarks a calibrated wor
 
 ## Architecture & Features
 
-1. **Live Market Ingestion (`scripts/fetch_markets.py`)**
+1. **Live Market Ingestion & Weekly Automation (`scripts/fetch_markets.py`, `.github/workflows/refresh-markets.yml`)**
    - Queries `https://api.manifold.markets/v0/markets?limit=60` (and high-liquidity domain search endpoints when needed) to extract 20 clean, open binary markets across AI, Energy, Biotech, and Macro.
+   - Weekly GitHub Actions workflow (`.github/workflows/refresh-markets.yml`) runs every Monday at 06:00 UTC (plus manual `workflow_dispatch`), refreshes `public/data/markets.json` with live probabilities and an `updated_at` UTC timestamp, and commits updates cleanly.
+   - Displays a live `Market Sync: <timestamp> (weekly automated refresh)` badge in the masthead and direct clickable links to each Manifold Market question.
    - Includes a verified fallback snapshot if the upstream API is unreachable or slow.
    - Computes structured reference-class base rates, calibrated model probabilities, edge-vs-market deltas, Popperian reasoning traces, and historical calibration benchmarks into `public/data/markets.json`.
 

@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 BASE_URL = "https://api.manifold.markets/v0"
-USER_AGENT = "CalibratedWorldModelEngine/1.0 (Mohammed KM)"
+USER_AGENT = "CalibratedWorldModelEngine/2.0 (Mohammed KM)"
 
 DOMAIN_KEYWORDS = {
     "AI": [
@@ -496,11 +496,17 @@ def main():
     tail_active = sum(1 for m in markets if m["tailEvent"])
     total_liquidity = round(sum(m["liquidity"] for m in markets), 1)
 
+    updated_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
     payload = {
+        "updated_at": updated_at,
         "meta": {
             "title": "Calibrated World-Model & Forecasting Engine",
+            "version": "2.0.0",
             "author": "Mohammed KM",
-            "generatedAt": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "generatedAt": updated_at,
+            "updated_at": updated_at,
+            "refreshSchedule": "weekly automated refresh",
             "dataMode": mode,
             "liveMarketsCount": live_count,
             "totalMarkets": len(markets),

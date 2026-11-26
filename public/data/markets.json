@@ -1,8 +1,12 @@
 {
+  "updated_at": "2026-11-26T19:36:07Z",
   "meta": {
     "title": "Calibrated World-Model & Forecasting Engine",
+    "version": "2.0.0",
     "author": "Mohammed KM",
-    "generatedAt": "2026-11-26T18:20:56Z",
+    "generatedAt": "2026-11-26T19:36:07Z",
+    "updated_at": "2026-11-26T19:36:07Z",
+    "refreshSchedule": "weekly automated refresh",
     "dataMode": "live",
     "liveMarketsCount": 20,
     "totalMarkets": 20,

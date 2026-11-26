@@ -1,0 +1,55 @@
+name: Refresh Manifold Markets Data
+
+on:
+  schedule:
+    # Weekly automated refresh every Monday at 06:00 UTC
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-markets
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    name: Refresh live Manifold Markets snapshot
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Fetch live Manifold Markets probabilities
+        run: python3 scripts/fetch_markets.py
+
+      - name: Validate refreshed markets.json
+        run: |
+          python3 -c "
+          import json
+          from pathlib import Path
+          data = json.loads(Path('public/data/markets.json').read_text(encoding='utf-8'))
+          assert data.get('updated_at'), 'Missing top-level updated_at'
+          assert isinstance(data.get('markets'), list) and len(data['markets']) > 0, 'Empty markets list'
+          print(f\"Validated {len(data['markets'])} markets, updated_at={data['updated_at']}\")
+          "
+
+      - name: Commit and push updated markets.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet public/data/markets.json; then
+            echo "No changes to public/data/markets.json"
+            exit 0
+          fi
+          UPDATED_AT=$(python3 -c "import json; print(json.load(open('public/data/markets.json'))['updated_at'])")
+          git add public/data/markets.json
+          git commit -m "chore(data): weekly Manifold Markets refresh (${UPDATED_AT})"
+          git push

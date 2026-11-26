@@ -112,7 +112,14 @@ function renderMasthead() {
     feedEl.classList.add('fallback');
   }
 
-  document.getElementById('snapshot-time').textContent = meta.generatedAt.replace('T', ' ').replace('Z', '');
+  const syncTs = state.data.updated_at || meta.updated_at || meta.generatedAt || '--';
+  const formattedTs = syncTs === '--' ? '--' : `${syncTs.replace('T', ' ').replace('Z', '')} UTC`;
+  document.getElementById('snapshot-time').textContent = formattedTs;
+
+  const syncTextEl = document.getElementById('market-sync-text');
+  if (syncTextEl) {
+    syncTextEl.textContent = `Market Sync: ${formattedTs} (weekly automated refresh)`;
+  }
 
   const visible = state.domain === 'ALL'
     ? state.data.markets
@@ -303,11 +310,24 @@ function renderMarketsTable() {
       return `
         <tr data-market-id="${m.id}" class="${selected}">
           <td class="q-cell">
-            <span class="q-title">${escapeHtml(m.question)}</span>
+            <a
+              class="q-title-link"
+              href="${escapeHtml(m.url)}"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Open market question on Manifold Markets"
+            >${escapeHtml(m.question)}</a>
             <span class="q-meta">
               <span>Liq ${fmtCompact(m.liquidity)}</span>
               <span>&middot;</span>
               <span>Closes ${m.closeDate}</span>
+              <span>&middot;</span>
+              <a
+                class="q-ext-link"
+                href="${escapeHtml(m.url)}"
+                target="_blank"
+                rel="noopener noreferrer"
+              >Manifold &rarr;</a>
               ${m.tailEvent ? '<span class="tail-pill">TAIL</span>' : ''}
             </span>
           </td>
