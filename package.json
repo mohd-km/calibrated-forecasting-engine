@@ -1,0 +1,16 @@
+{
+  "name": "calibrated-world-model-forecasting-engine",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Calibrated World-Model & Forecasting Engine by Mohammed KM",
+  "type": "module",
+  "scripts": {
+    "fetch-data": "python3 scripts/fetch_markets.py",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^6.2.0"
+  }
+}

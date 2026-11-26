@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calibrated World-Model &amp; Forecasting Engine — Mohammed KM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <div id="app" class="app-shell">
+      <header class="masthead">
+        <div class="masthead-top">
+          <div class="masthead-brand">
+            <div class="eyebrow">QUANTITATIVE EPISTEMOLOGY // LIVE BENCHMARK</div>
+            <h1>Calibrated World-Model &amp; Forecasting Engine</h1>
+            <p class="subtitle">
+              Popperian conjecture, adversarial falsification, and tail-risk accounting benchmarked against live Manifold binary markets.
+            </p>
+          </div>
+          <div class="masthead-meta">
+            <div class="author-block">
+              <span class="meta-label">AUTHOR</span>
+              <span class="meta-value">Mohammed KM</span>
+            </div>
+            <div class="feed-block">
+              <span class="meta-label">MARKET FEED</span>
+              <span id="feed-status" class="feed-pill">LOADING...</span>
+            </div>
+            <div class="timestamp-block">
+              <span class="meta-label">SNAPSHOT (UTC)</span>
+              <span id="snapshot-time" class="meta-mono">--</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-bar">
+          <div class="domain-filter" role="tablist" aria-label="Domain Filter">
+            <span class="filter-label">DOMAIN</span>
+            <button class="domain-btn active" data-domain="ALL" role="tab" aria-selected="true">All Domains</button>
+            <button class="domain-btn" data-domain="AI" role="tab" aria-selected="false">AI</button>
+            <button class="domain-btn" data-domain="Energy" role="tab" aria-selected="false">Energy</button>
+            <button class="domain-btn" data-domain="Biotech" role="tab" aria-selected="false">Biotech</button>
+            <button class="domain-btn" data-domain="Macro" role="tab" aria-selected="false">Macro</button>
+          </div>
+          <div class="telemetry-strip">
+            <div class="telemetry-item">
+              <span class="t-label">ACTIVE CONTRACTS</span>
+              <span id="stat-active-count" class="t-val">--</span>
+            </div>
+            <div class="telemetry-item">
+              <span class="t-label">TRACKED LIQUIDITY</span>
+              <span id="stat-liquidity" class="t-val">--</span>
+            </div>
+            <div class="telemetry-item">
+              <span class="t-label">TAIL REGIME (&lt;10% / &gt;90%)</span>
+              <span id="stat-tail-count" class="t-val amber">--</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="dashboard-main">
+        <!-- SECTION 1: CALIBRATION SCOREBOARD -->
+        <section class="section-block" aria-labelledby="sec-scoreboard">
+          <div class="section-header">
+            <div>
+              <h2 id="sec-scoreboard">01 / Calibration Scoreboard</h2>
+              <p class="section-note" id="scoreboard-context">
+                Evaluated across 312 resolved binary forecasts (2023-Q1 to 2026-Q4). Lower Brier, Log-Loss, and Tail-Risk scores indicate superior calibration.
+              </p>
+            </div>
+          </div>
+
+          <div class="kpi-grid">
+            <article class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-title">Brier Score</span>
+                <span class="kpi-tag">PROPER QUADRATIC</span>
+              </div>
+              <div class="kpi-value-row">
+                <span id="kpi-brier" class="kpi-value">--</span>
+                <span id="kpi-brier-delta" class="kpi-delta positive">--</span>
+              </div>
+              <div class="kpi-compare">
+                <span>Manifold Crowd: <strong id="kpi-brier-mkt">--</strong></span>
+              </div>
+              <p class="kpi-desc">Mean squared probability error across all resolved contracts in scope.</p>
+            </article>
+
+            <article class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-title">Log-Loss</span>
+                <span class="kpi-tag">CROSS-ENTROPY</span>
+              </div>
+              <div class="kpi-value-row">
+                <span id="kpi-logloss" class="kpi-value">--</span>
+                <span id="kpi-logloss-delta" class="kpi-delta positive">--</span>
+              </div>
+              <div class="kpi-compare">
+                <span>Manifold Crowd: <strong id="kpi-logloss-mkt">--</strong></span>
+              </div>
+              <p class="kpi-desc">Information-theoretic penalty that punishes overconfident misses exponentially.</p>
+            </article>
+
+            <article class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-title">Market Edge</span>
+                <span class="kpi-tag">BRIER SKILL SCORE</span>
+              </div>
+              <div class="kpi-value-row">
+                <span id="kpi-edge" class="kpi-value cyan">--</span>
+                <span id="kpi-edge-active" class="kpi-delta neutral">--</span>
+              </div>
+              <div class="kpi-compare">
+                <span>Live Avg |Model - Market|: <strong id="kpi-avg-abs-edge">--</strong></span>
+              </div>
+              <p class="kpi-desc">Percentage Brier error reduction achieved relative to closing Manifold prices.</p>
+            </article>
+
+            <article class="kpi-card kpi-card-tail">
+              <div class="kpi-top">
+                <span class="kpi-title">Taleb Tail-Risk Score</span>
+                <span class="kpi-tag amber-tag">&lt;10% / &gt;90% ISOLATED</span>
+              </div>
+              <div class="kpi-value-row">
+                <span id="kpi-tail" class="kpi-value amber">--</span>
+                <span id="kpi-tail-delta" class="kpi-delta positive">--</span>
+              </div>
+              <div class="kpi-compare">
+                <span>Crowd Tail Score: <strong id="kpi-tail-mkt">--</strong> &middot; <strong id="kpi-tail-n">--</strong> tail events</span>
+              </div>
+              <p class="kpi-desc">Rare-event Brier score tracked independently so fat-tail blowups never hide behind bulk averages.</p>
+            </article>
+          </div>
+        </section>
+
+        <!-- SECTION 2: CALIBRATION CURVE + DOMAIN MATRIX -->
+        <section class="section-block" aria-labelledby="sec-calibration">
+          <div class="section-header">
+            <div>
+              <h2 id="sec-calibration">02 / Reliability Diagram &amp; Calibration Curve</h2>
+              <p class="section-note">
+                Predicted probability vs. empirical resolution frequency across decile buckets. Shaded bands isolate Taleb tail regimes.
+              </p>
+            </div>
+            <div class="chart-toggles">
+              <label class="toggle-chip">
+                <input type="checkbox" id="toggle-market-curve" checked />
+                <span>Show Crowd Baseline</span>
+              </label>
+              <label class="toggle-chip">
+                <input type="checkbox" id="toggle-tail-zones" checked />
+                <span>Highlight Tail Zones</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="calibration-grid">
+            <div class="panel chart-panel">
+              <div class="chart-legend">
+                <span class="legend-item"><i class="swatch swatch-model"></i>World-Model Curve</span>
+                <span class="legend-item"><i class="swatch swatch-market"></i>Manifold Crowd</span>
+                <span class="legend-item"><i class="swatch swatch-ideal"></i>Perfect Calibration (y = x)</span>
+                <span class="legend-item"><i class="swatch swatch-tail"></i>Tail Risk Band (&lt;10% / &gt;90%)</span>
+              </div>
+              <div class="svg-wrapper">
+                <svg id="calibration-svg" viewBox="0 0 640 400" role="img" aria-label="Calibration Curve"></svg>
+              </div>
+              <div id="bin-inspector" class="bin-inspector">
+                Hover or focus any decile point on the curve to inspect bin calibration error and sample size.
+              </div>
+            </div>
+
+            <div class="panel domain-panel">
+              <div class="panel-header">
+                <h3>Domain Calibration Breakdown</h3>
+                <span class="panel-sub">Click any row to filter dashboard</span>
+              </div>
+              <table class="mini-table" id="domain-breakdown-table">
+                <thead>
+                  <tr>
+                    <th>Domain</th>
+                    <th class="num">n</th>
+                    <th class="num">Brier</th>
+                    <th class="num">Log-Loss</th>
+                    <th class="num">Tail</th>
+                    <th class="num">Edge</th>
+                  </tr>
+                </thead>
+                <tbody id="domain-breakdown-body"></tbody>
+              </table>
+              <div class="methodology-box">
+                <div class="meth-title">Why Separate Tail-Risk Accounting?</div>
+                <p>
+                  Standard Brier averages dilute rare-event failures across dozens of 40-60% contracts. Tracking the <code>&lt;10%</code> and <code>&gt;90%</code> bins independently exposes hidden fragility and asymmetric log-loss risk before a single black-swan resolution wipes out accumulated edge.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 3: LIVE MARKET TABLE + POPPERIAN TRACE INSPECTOR -->
+        <section class="section-block" aria-labelledby="sec-markets">
+          <div class="section-header">
+            <div>
+              <h2 id="sec-markets">03 / Live Binary Markets &amp; Popperian Trace</h2>
+              <p class="section-note">
+                Select any live Manifold contract to inspect the Conjecture &rarr; Adversarial Critique &rarr; Calibrated Probability trace.
+              </p>
+            </div>
+            <div class="table-controls">
+              <input
+                type="search"
+                id="market-search"
+                class="search-input"
+                placeholder="Filter questions..."
+                aria-label="Filter market questions"
+              />
+              <select id="market-sort" class="sort-select" aria-label="Sort markets">
+                <option value="edge">Sort: Largest Edge</option>
+                <option value="liquidity">Sort: Highest Liquidity</option>
+                <option value="tail">Sort: Tail Events First</option>
+                <option value="marketProb">Sort: Market Price</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="markets-split">
+            <div class="panel table-panel">
+              <div class="table-scroll">
+                <table class="markets-table">
+                  <thead>
+                    <tr>
+                      <th>Market Contract</th>
+                      <th>Domain</th>
+                      <th class="num">Market</th>
+                      <th class="num">Base Rate</th>
+                      <th class="num">Model</th>
+                      <th class="num">Edge</th>
+                    </tr>
+                  </thead>
+                  <tbody id="markets-table-body"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <aside class="panel trace-panel" id="trace-panel" aria-live="polite">
+              <div class="trace-header">
+                <div class="trace-badges">
+                  <span id="trace-domain-badge" class="domain-pill">--</span>
+                  <span id="trace-tail-badge" class="tail-pill hidden">TAIL REGIME</span>
+                  <span id="trace-source-badge" class="source-pill">--</span>
+                </div>
+                <h3 id="trace-question">Select a market contract</h3>
+                <div class="trace-meta-row">
+                  <span id="trace-liquidity">Liquidity: --</span>
+                  <span id="trace-traders">Traders: --</span>
+                  <span id="trace-close">Closes: --</span>
+                  <a id="trace-link" href="#" target="_blank" rel="noopener noreferrer" class="ext-link">Open on Manifold &rarr;</a>
+                </div>
+              </div>
+
+              <div class="prob-compare-strip">
+                <div class="prob-box">
+                  <span class="pb-label">BASE RATE</span>
+                  <span id="trace-base" class="pb-val">--</span>
+                </div>
+                <div class="prob-box">
+                  <span class="pb-label">MANIFOLD MARKET</span>
+                  <span id="trace-market" class="pb-val">--</span>
+                </div>
+                <div class="prob-box highlight-box">
+                  <span class="pb-label">WORLD-MODEL</span>
+                  <span id="trace-model" class="pb-val cyan">--</span>
+                </div>
+                <div class="prob-box">
+                  <span class="pb-label">NET EDGE</span>
+                  <span id="trace-edge" class="pb-val">--</span>
+                </div>
+              </div>
+
+              <div class="prob-track-visual" id="prob-track-visual">
+                <div class="track-line"></div>
+                <div id="marker-base" class="track-marker marker-base" title="Base Rate"></div>
+                <div id="marker-market" class="track-marker marker-market" title="Manifold Market"></div>
+                <div id="marker-model" class="track-marker marker-model" title="World-Model"></div>
+                <div class="track-scale">
+                  <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>
+                </div>
+              </div>
+
+              <div class="popper-steps">
+                <div class="popper-step">
+                  <div class="step-label">01 // POPPERIAN CONJECTURE</div>
+                  <p id="trace-conjecture">--</p>
+                </div>
+                <div class="popper-step step-critique">
+                  <div class="step-label">02 // ADVERSARIAL CRITIQUE</div>
+                  <p id="trace-critique">--</p>
+                </div>
+                <div class="popper-step step-synthesis">
+                  <div class="step-label">03 // FINAL CALIBRATED PROBABILITY</div>
+                  <p id="trace-synthesis">--</p>
+                </div>
+              </div>
+
+              <div class="falsifiers-box">
+                <div class="step-label">FALSIFICATION TRIGGERS</div>
+                <ul id="trace-falsifiers"></ul>
+              </div>
+
+              <div class="trace-actions">
+                <button id="btn-load-sandbox" class="primary-btn" type="button">
+                  Test Your Probability in Brier Sandbox &rarr;
+                </button>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <!-- SECTION 4: INTERACTIVE BRIER & LOG-LOSS SANDBOX -->
+        <section class="section-block" id="sandbox-section" aria-labelledby="sec-sandbox">
+          <div class="section-header">
+            <div>
+              <h2 id="sec-sandbox">04 / Interactive Brier &amp; Log-Loss Sandbox</h2>
+              <p class="section-note">
+                Enter your own probability on any live market to see how strictly proper scoring rules reward calibration and punish overconfidence.
+              </p>
+            </div>
+          </div>
+
+          <div class="sandbox-grid">
+            <div class="panel sandbox-controls-panel">
+              <div class="field-group">
+                <label for="sandbox-market-select" class="field-label">ACTIVE CONTRACT</label>
+                <select id="sandbox-market-select" class="sandbox-select"></select>
+              </div>
+
+              <div class="sandbox-anchors">
+                <div class="anchor-chip">
+                  <span class="ac-label">Manifold Market</span>
+                  <span id="sb-mkt-prob" class="ac-val">--</span>
+                </div>
+                <div class="anchor-chip">
+                  <span class="ac-label">World-Model (p*)</span>
+                  <span id="sb-mod-prob" class="ac-val cyan">--</span>
+                </div>
+                <div class="anchor-chip">
+                  <span class="ac-label">Reference Base Rate</span>
+                  <span id="sb-base-prob" class="ac-val">--</span>
+                </div>
+              </div>
+
+              <div class="slider-block">
+                <div class="slider-header">
+                  <label for="sandbox-slider" class="field-label">YOUR PROBABILITY FORECAST</label>
+                  <div class="prob-input-wrap">
+                    <input
+                      type="number"
+                      id="sandbox-number"
+                      min="1"
+                      max="99"
+                      step="1"
+                      value="50"
+                      aria-label="Your probability percentage"
+                    />
+                    <span class="pct-unit">%</span>
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  id="sandbox-slider"
+                  min="1"
+                  max="99"
+                  step="1"
+                  value="50"
+                  class="prob-slider"
+                />
+                <div class="preset-row">
+                  <button type="button" class="preset-btn" data-preset="market">Match Market</button>
+                  <button type="button" class="preset-btn" data-preset="model">Match Model</button>
+                  <button type="button" class="preset-btn" data-preset="95">Overconfident 95%</button>
+                  <button type="button" class="preset-btn" data-preset="5">Overconfident 5%</button>
+                  <button type="button" class="preset-btn" data-preset="50">Neutral 50%</button>
+                </div>
+              </div>
+
+              <div id="sandbox-verdict" class="verdict-banner">
+                Adjust the slider to test calibration vs. overconfidence.
+              </div>
+
+              <table class="score-table">
+                <thead>
+                  <tr>
+                    <th>Scenario / Metric</th>
+                    <th class="num">Your Forecast</th>
+                    <th class="num">World-Model</th>
+                    <th class="num">Manifold</th>
+                  </tr>
+                </thead>
+                <tbody id="sandbox-score-body"></tbody>
+              </table>
+            </div>
+
+            <div class="panel sandbox-chart-panel">
+              <div class="panel-header">
+                <h3>Log-Loss Penalty Landscape (Asymmetry of Overconfidence)</h3>
+                <span class="panel-sub">Evaluating expected loss under Model p* vs. realized YES / NO cliffs</span>
+              </div>
+              <div class="svg-wrapper">
+                <svg id="sandbox-svg" viewBox="0 0 560 320" role="img" aria-label="Proper Scoring Rule Penalty Curve"></svg>
+              </div>
+              <div class="sandbox-insight-grid">
+                <div class="insight-card">
+                  <span class="ic-label">EXPECTED BRIER (UNDER MODEL p*)</span>
+                  <span id="sb-exp-brier" class="ic-val">--</span>
+                  <span id="sb-exp-brier-diff" class="ic-sub">--</span>
+                </div>
+                <div class="insight-card">
+                  <span class="ic-label">OVERCONFIDENCE PENALTY (KL DIVERGENCE)</span>
+                  <span id="sb-kl-div" class="ic-val amber">--</span>
+                  <span class="ic-sub">Extra nats of log-loss from miscalibration</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <div>
+          <strong>Calibrated World-Model &amp; Forecasting Engine</strong> &mdash; Built by Mohammed KM.
+        </div>
+        <div class="footer-right">
+          Live market prices sourced from
+          <a href="https://manifold.markets" target="_blank" rel="noopener noreferrer">Manifold Markets API</a>.
+          Strictly proper scoring rules: Brier &amp; Log-Loss.
+        </div>
+      </footer>
+    </div>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
