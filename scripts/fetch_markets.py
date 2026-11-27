@@ -427,6 +427,8 @@ def run_resolved_backtest():
             p_mod = apply_rule(p_mkt)
             records.append({
                 "id": m["id"],
+                "question": (m.get("question") or "").strip(),
+                "url": m.get("url") or "",
                 "domain": dom,
                 "marketProb": p_mkt,
                 "modelProb": p_mod,
@@ -455,6 +457,22 @@ def run_resolved_backtest():
         "rule": RULE_SPEC,
         "overall": overall,
         "byDomain": by_domain,
+        # Per-market records (price at T-7d + outcome) so the client can re-score any k exactly.
+        "records": sorted(
+            [
+                {
+                    "id": r["id"],
+                    "question": r["question"],
+                    "url": r["url"],
+                    "domain": r["domain"],
+                    "marketProb": r["marketProb"],
+                    "y": r["y"],
+                    "resolvedAt": datetime.fromtimestamp(r["resolvedMs"] / 1000.0, tz=timezone.utc).strftime("%Y-%m-%d"),
+                }
+                for r in records
+            ],
+            key=lambda r: r["resolvedAt"],
+        ),
     }
 
 
@@ -605,6 +623,28 @@ def update_forward_ledger(ledger_path: Path, markets: list, updated_at: str) -> 
             "entries": [],
         }
 
+    # Score previously logged contracts that have since resolved (logged probabilities are never touched).
+    for e in ledger.get("entries", []):
+        if e.get("status") != "open":
+            continue
+        try:
+            info = http_get_json(f"{BASE_URL}/market/{urllib.parse.quote(e['id'])}", timeout=8)
+        except Exception:
+            continue
+        if info.get("isResolved") and info.get("resolution") in ("YES", "NO"):
+            y = 1 if info["resolution"] == "YES" else 0
+            e["status"] = "resolved"
+            e["resolution"] = info["resolution"]
+            res_ms = info.get("resolutionTime") or info.get("closeTime")
+            e["resolvedAt"] = (
+                datetime.fromtimestamp(float(res_ms) / 1000.0, tz=timezone.utc).strftime("%Y-%m-%d") if res_ms else None
+            )
+            e["brierModel"] = round(brier_score(e["modelProbAtLog"], y), 4)
+            e["brierMarket"] = round(brier_score(e["marketProbAtLog"], y), 4)
+        elif info.get("isResolved"):
+            e["status"] = "void"
+            e["resolution"] = info.get("resolution")
+
     existing_ids = {e["id"] for e in ledger.get("entries", [])}
     for m in markets:
         if m["id"] not in existing_ids:
@@ -631,6 +671,10 @@ def update_forward_ledger(ledger_path: Path, markets: list, updated_at: str) -> 
 
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
     ledger_path.write_text(json.dumps(ledger, indent=2) + "\n", encoding="utf-8")
+    # Publish a read-only copy for the browser
+    public_copy = ledger_path.parent.parent / "public" / "data" / "forward_ledger.json"
+    public_copy.parent.mkdir(parents=True, exist_ok=True)
+    public_copy.write_text(json.dumps(ledger, indent=2) + "\n", encoding="utf-8")
     return {
         "startDate": ledger["startDate"],
         "startDateLabel": ledger["startDateLabel"],
@@ -638,6 +682,7 @@ def update_forward_ledger(ledger_path: Path, markets: list, updated_at: str) -> 
         "openCount": open_count,
         "summary": ledger["summary"],
         "ledgerPath": "data/forward_ledger.json",
+        "publicPath": "data/forward_ledger.json",
     }
 
 

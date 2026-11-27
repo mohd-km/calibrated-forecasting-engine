@@ -1,3 +1,8 @@
+import { TEMPLATE } from './template.js';
+
+export function mountCalibration(root) {
+const $ = (id) => root.querySelector(`#${id}`);
+
 const DOMAINS = ['AI', 'Energy', 'Biotech', 'Macro'];
 const DEFAULT_K = 1.15;
 const K_MIN = 0.5;
@@ -15,6 +20,8 @@ const state = {
   sandboxProb: 0.5,
   showMarketCurve: true,
   showTailZones: true,
+  ledger: null,
+  ledgerFilter: 'all',
 };
 
 function clampProb(p, lo = 0.01, hi = 0.99) {
@@ -105,196 +112,132 @@ function escapeHtml(str) {
    Client-side Backtest Engine over Committed Resolved Manifold JSON
    ========================================================================= */
 
-function getExactDomainBacktest(domainKey) {
-  const { backtest } = state.data;
-  if (domainKey === 'ALL') {
-    return {
-      ...backtest.overall,
-      resolvedCount: backtest.resolvedCount,
-      label: 'All Domains',
-    };
-  }
-  return {
-    ...backtest.byDomain[domainKey],
-    label: domainKey,
-  };
+function getRecords(domainKey) {
+  const recs = state.data.backtest.records || [];
+  return domainKey === 'ALL' ? recs : recs.filter((r) => r.domain === domainKey);
 }
 
-function getResolvedBinAtoms(domainKey) {
-  const keys = domainKey === 'ALL' ? DOMAINS : [domainKey];
-  const atoms = [];
-  for (const dk of keys) {
-    const domData = state.data.backtest.byDomain[dk];
-    if (!domData || !domData.calibrationBins) continue;
-    for (const bin of domData.calibrationBins) {
-      if (!bin.marketN || bin.marketEmpirical === null || bin.marketEmpirical === undefined) continue;
-      const n = bin.marketN;
-      const yes = Math.round(bin.marketEmpirical * n);
-      const no = n - yes;
-      const pMkt = clampProb(bin.marketPredicted, 0.01, 0.99);
-      atoms.push({
-        domain: dk,
-        pMkt,
-        n,
-        yes,
-        no,
-        isTailMkt: pMkt < 0.15 || pMkt > 0.85,
-      });
-    }
-  }
-  return atoms;
+function probAtK(pMarket, k) {
+  const pm = clampProb(Number(pMarket), 0.01, 0.99);
+  return Math.abs(k - 1.0) < 1e-6 ? pm : applyRule(pm, k);
 }
 
-function rawStatsAtK(atoms, k) {
-  let n = 0;
-  let brierSum = 0;
-  let llSum = 0;
-  let tailBrierSum = 0;
-  let tailMktN = 0;
-  let tailPredN = 0;
-  let tailPredCorrect = 0;
+const isTailP = (p) => p < 0.15 || p > 0.85;
 
-  for (const a of atoms) {
-    const p = Math.abs(k - 1.0) < 1e-6 ? a.pMkt : applyRule(a.pMkt, k);
-    n += a.n;
-    const b = a.yes * (p - 1) ** 2 + a.no * p ** 2;
-    const ll = a.yes * -Math.log(p) + a.no * -Math.log(1 - p);
-    brierSum += b;
-    llSum += ll;
+// Exact re-scoring of every resolved market at parameter k (no approximation).
+function evaluateBacktestAtK(domainKey, k) {
+  const recs = getRecords(domainKey);
+  const n = recs.length;
+  let bSum = 0, llSum = 0, mbSum = 0, mllSum = 0;
+  let tailN = 0, tailB = 0, tailMB = 0;
+  let predTailN = 0, predTailHit = 0, mktTailN = 0, mktTailHit = 0;
+  const modBins = Array.from({ length: 10 }, () => ({ n: 0, p: 0, y: 0 }));
+  const mktBins = Array.from({ length: 10 }, () => ({ n: 0, p: 0, y: 0 }));
 
-    if (a.isTailMkt) {
-      tailBrierSum += b;
-      tailMktN += a.n;
+  for (const r of recs) {
+    const pm = clampProb(Number(r.marketProb), 0.01, 0.99);
+    const p = probAtK(pm, k);
+    const y = r.y;
+    const b = (p - y) ** 2;
+    const mb = (pm - y) ** 2;
+    bSum += b;
+    mbSum += mb;
+    llSum += y === 1 ? -Math.log(p) : -Math.log(1 - p);
+    mllSum += y === 1 ? -Math.log(pm) : -Math.log(1 - pm);
+    if (isTailP(pm)) {
+      tailN += 1;
+      tailB += b;
+      tailMB += mb;
     }
-    if (p < 0.15 || p > 0.85) {
-      tailPredN += a.n;
-      tailPredCorrect += p < 0.5 ? a.no : a.yes;
+    if (isTailP(p)) {
+      predTailN += 1;
+      predTailHit += (p < 0.5 ? 1 - y : y);
     }
+    if (isTailP(pm)) {
+      mktTailN += 1;
+      mktTailHit += (pm < 0.5 ? 1 - y : y);
+    }
+    const mi = Math.min(9, Math.floor(p * 10));
+    modBins[mi].n += 1; modBins[mi].p += p; modBins[mi].y += y;
+    const ki = Math.min(9, Math.floor(pm * 10));
+    mktBins[ki].n += 1; mktBins[ki].p += pm; mktBins[ki].y += y;
   }
 
-  return {
-    n,
-    brier: n > 0 ? brierSum / n : 0,
-    logLoss: n > 0 ? llSum / n : 0,
-    tailBrier: tailMktN > 0 ? tailBrierSum / tailMktN : null,
-    tailAccPct: tailPredN > 0 ? (tailPredCorrect / tailPredN) * 100 : null,
-    tailPredN,
-  };
-}
-
-function computeCalibrationBinsAtK(atoms, exact, k) {
-  // At exact pre-registered k = 1.15, return committed exact bins
-  if (Math.abs(k - DEFAULT_K) < 1e-4) {
-    return exact.calibrationBins || [];
-  }
-
-  const mktMap = new Map();
-  for (const b of exact.calibrationBins || []) {
-    mktMap.set(b.bin, b);
-  }
-
-  const buckets = Array.from({ length: 10 }, (_, i) => ({
-    bin: `${i * 10}-${(i + 1) * 10}%`,
-    n: 0,
-    predSum: 0,
-    yesSum: 0,
-    isTail: i === 0 || i === 9,
-  }));
-
-  for (const a of atoms) {
-    const p = Math.abs(k - 1.0) < 1e-6 ? a.pMkt : applyRule(a.pMkt, k);
-    const idx = Math.min(9, Math.max(0, Math.floor(p * 10)));
-    buckets[idx].n += a.n;
-    buckets[idx].predSum += p * a.n;
-    buckets[idx].yesSum += a.yes;
-  }
-
-  const result = [];
+  const calibrationBins = [];
   for (let i = 0; i < 10; i++) {
-    const b = buckets[i];
-    const mkt = mktMap.get(b.bin);
-    const mktN = mkt ? mkt.marketN : 0;
-    if (b.n === 0 && mktN === 0) continue;
-    result.push({
-      bin: b.bin,
-      predicted: b.n > 0 ? b.predSum / b.n : (i + 0.5) / 10,
-      empirical: b.n > 0 ? b.yesSum / b.n : null,
-      marketPredicted: mkt ? mkt.marketPredicted : (i + 0.5) / 10,
-      marketEmpirical: mkt ? mkt.marketEmpirical : null,
-      n: b.n,
-      marketN: mktN,
-      isTail: b.isTail,
+    const mb = modBins[i];
+    const kb = mktBins[i];
+    if (!mb.n && !kb.n) continue;
+    calibrationBins.push({
+      bin: `${i * 10}-${(i + 1) * 10}%`,
+      predicted: mb.n ? mb.p / mb.n : (i + 0.5) / 10,
+      empirical: mb.n ? mb.y / mb.n : null,
+      marketPredicted: kb.n ? kb.p / kb.n : (i + 0.5) / 10,
+      marketEmpirical: kb.n ? kb.y / kb.n : null,
+      n: mb.n,
+      marketN: kb.n,
+      isTail: i === 0 || i === 9,
     });
   }
-  return result;
-}
 
-function evaluateBacktestAtK(domainKey, k) {
-  const exact = getExactDomainBacktest(domainKey);
-  const atoms = getResolvedBinAtoms(domainKey);
-  const rawAt1 = rawStatsAtK(atoms, 1.0);
-  const rawAtK = rawStatsAtK(atoms, k);
-
-  // Within-bin variance offset (exact crowd score minus bin-centroid crowd score)
-  const brierOffset = exact.marketBrierScore - rawAt1.brier;
-  const llOffset = exact.marketLogLoss - rawAt1.logLoss;
-  const tailOffset =
-    exact.marketTailBrierScore !== null && rawAt1.tailBrier !== null
-      ? exact.marketTailBrierScore - rawAt1.tailBrier
-      : 0;
-
-  let brierScore;
-  let logLoss;
-  let tailBrierScore;
-
-  if (Math.abs(k - DEFAULT_K) < 1e-4) {
-    brierScore = exact.brierScore;
-    logLoss = exact.logLoss;
-    tailBrierScore = exact.tailBrierScore;
-  } else if (Math.abs(k - 1.0) < 1e-4) {
-    brierScore = exact.marketBrierScore;
-    logLoss = exact.marketLogLoss;
-    tailBrierScore = exact.marketTailBrierScore;
-  } else {
-    brierScore = Math.max(0.0001, rawAtK.brier + brierOffset);
-    logLoss = Math.max(0.0001, rawAtK.logLoss + llOffset);
-    tailBrierScore =
-      rawAtK.tailBrier !== null ? Math.max(0.0001, rawAtK.tailBrier + tailOffset) : null;
-  }
-
-  const brierSkillPct =
-    exact.marketBrierScore > 0 ? (1 - brierScore / exact.marketBrierScore) * 100 : 0;
-
+  const brierScore = n ? bSum / n : 0;
+  const marketBrierScore = n ? mbSum / n : 0;
   return {
-    label: exact.label,
-    resolvedCount: exact.resolvedCount,
+    label: domainKey === 'ALL' ? 'All domains' : domainKey,
+    resolvedCount: n,
     brierScore,
-    marketBrierScore: exact.marketBrierScore,
-    logLoss,
-    marketLogLoss: exact.marketLogLoss,
-    brierSkillPct,
-    tailBrierScore,
-    marketTailBrierScore: exact.marketTailBrierScore,
-    tailEventCount: exact.tailEventCount,
-    tailAccPct: rawAtK.tailAccPct,
-    tailPredN: rawAtK.tailPredN,
-    calibrationBins: computeCalibrationBinsAtK(atoms, exact, k),
+    marketBrierScore,
+    logLoss: n ? llSum / n : 0,
+    marketLogLoss: n ? mllSum / n : 0,
+    brierSkillPct: marketBrierScore > 0 ? (1 - brierScore / marketBrierScore) * 100 : 0,
+    tailBrierScore: tailN ? tailB / tailN : null,
+    marketTailBrierScore: tailN ? tailMB / tailN : null,
+    tailEventCount: tailN,
+    tailAccPct: predTailN ? (predTailHit / predTailN) * 100 : null,
+    tailPredN: predTailN,
+    marketTailAccPct: mktTailN ? (mktTailHit / mktTailN) * 100 : null,
+    calibrationBins,
   };
 }
 
 function computeKSweep(domainKey) {
   const points = [];
   let best = null;
-  for (let step = 50; step <= 200; step += 2) {
+  for (let step = 50; step <= 200; step += 1) {
     const kVal = step / 100;
     const ev = evaluateBacktestAtK(domainKey, kVal);
     const pt = { k: kVal, brier: ev.brierScore, logLoss: ev.logLoss, skill: ev.brierSkillPct };
     points.push(pt);
-    if (!best || pt.brier < best.brier) {
-      best = pt;
-    }
+    if (!best || pt.brier < best.brier - 1e-12) best = pt;
   }
   return { points, best };
+}
+
+function backtestCsv() {
+  const rows = ['id,domain,resolved_at,question,url,market_prob_t7d,rule_prob,k,outcome_yes,brier_rule,brier_crowd,logloss_rule,logloss_crowd'];
+  for (const r of getRecords(state.domain)) {
+    const pm = clampProb(Number(r.marketProb), 0.01, 0.99);
+    const p = probAtK(pm, state.k);
+    const q = `"${String(r.question).replaceAll('"', '""')}"`;
+    rows.push([
+      r.id, r.domain, r.resolvedAt, q, r.url, pm.toFixed(4), p.toFixed(4), state.k.toFixed(2), r.y,
+      ((p - r.y) ** 2).toFixed(5), ((pm - r.y) ** 2).toFixed(5),
+      (r.y ? -Math.log(p) : -Math.log(1 - p)).toFixed(5), (r.y ? -Math.log(pm) : -Math.log(1 - pm)).toFixed(5),
+    ].join(','));
+  }
+  return rows.join('\n');
+}
+
+function downloadText(name, text, type) {
+  const blob = new Blob([text], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 /* =========================================================================
@@ -346,7 +289,7 @@ function getFilteredMarkets() {
 
 function renderMasthead() {
   const { meta, forwardLedger } = state.data;
-  const feedEl = document.getElementById('feed-status');
+  const feedEl = $('feed-status');
   if (meta.dataMode === 'live') {
     feedEl.textContent = `${state.data.backtest.resolvedCount} resolved · ${meta.liveMarketsCount} live`;
     feedEl.classList.remove('fallback');
@@ -355,15 +298,15 @@ function renderMasthead() {
     feedEl.classList.add('fallback');
   }
 
-  document.getElementById('tab-live-count').textContent = String(meta.liveMarketsCount);
+  $('tab-live-count').textContent = String(meta.liveMarketsCount);
 
   const syncTs = state.data.updated_at || meta.updated_at || meta.generatedAt || '--';
   const formattedTs = syncTs === '--' ? '--' : `${syncTs.replace('T', ' ').replace('Z', '')} UTC`;
 
-  const syncTextEl = document.getElementById('market-sync-text');
+  const syncTextEl = $('market-sync-text');
   if (syncTextEl) syncTextEl.textContent = `Synced ${formattedTs}`;
 
-  const ledgerEl = document.getElementById('forward-ledger-text');
+  const ledgerEl = $('forward-ledger-text');
   if (ledgerEl && forwardLedger) {
     ledgerEl.textContent = `Forward ledger: ${forwardLedger.summary} (${forwardLedger.openCount} open)`;
   }
@@ -376,9 +319,9 @@ function renderMasthead() {
   const liq = visible.reduce((acc, m) => acc + m.liquidity, 0);
   const tails = visible.filter((m) => m.tailEvent).length;
 
-  document.getElementById('stat-active-count').textContent = String(visible.length);
-  document.getElementById('stat-liquidity').textContent = fmtCompact(liq);
-  document.getElementById('stat-tail-count').textContent = String(tails);
+  $('stat-active-count').textContent = String(visible.length);
+  $('stat-liquidity').textContent = fmtCompact(liq);
+  $('stat-tail-count').textContent = String(tails);
 }
 
 function setDeltaClass(el, diff, lowerIsBetter = true) {
@@ -393,15 +336,15 @@ function setDeltaClass(el, diff, lowerIsBetter = true) {
 
 function renderKControls(sweep) {
   const kStr = state.k.toFixed(2);
-  document.getElementById('k-slider').value = kStr;
-  document.getElementById('k-readout').textContent = `k = ${kStr}`;
-  document.getElementById('formula-k').textContent = kStr;
-  document.getElementById('legend-k').textContent = `k=${kStr}`;
+  $('k-slider').value = kStr;
+  $('k-readout').textContent = `k = ${kStr}`;
+  $('formula-k').textContent = kStr;
+  $('legend-k').textContent = `k=${kStr}`;
 
-  const marketsKBadge = document.getElementById('markets-k-badge');
+  const marketsKBadge = $('markets-k-badge');
   if (marketsKBadge) marketsKBadge.textContent = `k = ${kStr}`;
 
-  const regimeEl = document.getElementById('k-regime-tag');
+  const regimeEl = $('k-regime-tag');
   regimeEl.classList.remove('shrink', 'crowd');
   if (Math.abs(state.k - 1.0) < 0.005) {
     regimeEl.textContent = 'Crowd Baseline';
@@ -413,13 +356,13 @@ function renderKControls(sweep) {
     regimeEl.textContent = 'Extremization';
   }
 
-  const optBtn = document.getElementById('btn-k-optimal');
+  const optBtn = $('btn-k-optimal');
   if (optBtn && sweep?.best) {
     optBtn.textContent = `Best k* (${sweep.best.k.toFixed(2)})`;
     optBtn.dataset.kVal = sweep.best.k.toFixed(2);
   }
 
-  document.querySelectorAll('.k-presets .chip-btn').forEach((btn) => {
+  root.querySelectorAll('.k-presets .chip-btn').forEach((btn) => {
     const target = btn.dataset.k === 'optimal' ? Number(btn.dataset.kVal) : Number(btn.dataset.k);
     btn.classList.toggle('active', Math.abs(state.k - target) < 0.005);
   });
@@ -428,7 +371,7 @@ function renderKControls(sweep) {
 function renderScoreboard(ev, sweep) {
   const { backtest } = state.data;
 
-  document.getElementById('scoreboard-context').textContent =
+  $('scoreboard-context').textContent =
     `${ev.label} · n = ${ev.resolvedCount} resolved Manifold markets (${backtest.window}), priced T−${backtest.horizonDays}d.`;
 
   const brierDiff = ev.brierScore - ev.marketBrierScore;
@@ -438,40 +381,40 @@ function renderScoreboard(ev, sweep) {
       ? ev.tailBrierScore - ev.marketTailBrierScore
       : null;
 
-  document.getElementById('kpi-brier').textContent = ev.brierScore.toFixed(4);
-  const brierDeltaEl = document.getElementById('kpi-brier-delta');
+  $('kpi-brier').textContent = ev.brierScore.toFixed(4);
+  const brierDeltaEl = $('kpi-brier-delta');
   brierDeltaEl.textContent = `${fmtSignedDelta(brierDiff, 4)}`;
   setDeltaClass(brierDeltaEl, brierDiff, true);
-  document.getElementById('kpi-brier-mkt').textContent = ev.marketBrierScore.toFixed(4);
+  $('kpi-brier-mkt').textContent = ev.marketBrierScore.toFixed(4);
 
-  document.getElementById('kpi-logloss').textContent = ev.logLoss.toFixed(4);
-  const logDeltaEl = document.getElementById('kpi-logloss-delta');
+  $('kpi-logloss').textContent = ev.logLoss.toFixed(4);
+  const logDeltaEl = $('kpi-logloss-delta');
   logDeltaEl.textContent = `${fmtSignedDelta(logDiff, 4)}`;
   setDeltaClass(logDeltaEl, logDiff, true);
-  document.getElementById('kpi-logloss-mkt').textContent = ev.marketLogLoss.toFixed(4);
+  $('kpi-logloss-mkt').textContent = ev.marketLogLoss.toFixed(4);
 
-  const edgeValEl = document.getElementById('kpi-edge');
+  const edgeValEl = $('kpi-edge');
   edgeValEl.textContent = fmtSignedPct(ev.brierSkillPct, 2);
   edgeValEl.className = `kpi-value ${ev.brierSkillPct > 0.005 ? 'good' : ev.brierSkillPct < -0.005 ? 'bad' : ''}`;
-  document.getElementById('kpi-edge-active').textContent = `n = ${ev.resolvedCount}`;
-  document.getElementById('kpi-opt-k').textContent = sweep?.best
+  $('kpi-edge-active').textContent = `n = ${ev.resolvedCount}`;
+  $('kpi-opt-k').textContent = sweep?.best
     ? `k* = ${sweep.best.k.toFixed(2)} (${fmtSignedPct(sweep.best.skill, 1)})`
     : '--';
 
-  document.getElementById('kpi-tail-acc').textContent =
+  $('kpi-tail-acc').textContent =
     ev.tailAccPct !== null ? `${ev.tailAccPct.toFixed(1)}%` : '--';
-  document.getElementById('kpi-tail').textContent =
+  $('kpi-tail').textContent =
     ev.tailBrierScore !== null ? ev.tailBrierScore.toFixed(4) : '--';
-  const tailDeltaEl = document.getElementById('kpi-tail-delta');
+  const tailDeltaEl = $('kpi-tail-delta');
   tailDeltaEl.textContent = tailDiff !== null ? fmtSignedDelta(tailDiff, 4) : 'n/a';
   setDeltaClass(tailDeltaEl, tailDiff, true);
-  document.getElementById('kpi-tail-mkt').textContent =
+  $('kpi-tail-mkt').textContent =
     ev.marketTailBrierScore !== null ? ev.marketTailBrierScore.toFixed(4) : '--';
-  document.getElementById('kpi-tail-n').textContent = String(ev.tailEventCount);
+  $('kpi-tail-n').textContent = String(ev.tailEventCount);
 }
 
 function renderCalibrationCurve(ev) {
-  const svg = document.getElementById('calibration-svg');
+  const svg = $('calibration-svg');
   const bins = ev.calibrationBins || [];
 
   const W = 640;
@@ -545,7 +488,7 @@ function renderCalibrationCurve(ev) {
 
   svg.innerHTML = parts.join('');
 
-  const inspector = document.getElementById('bin-inspector');
+  const inspector = $('bin-inspector');
   const showBin = (d) => {
     const err = d.empirical !== null ? ((d.empirical - d.predicted) * 100).toFixed(1) : null;
     const mktErr =
@@ -568,7 +511,7 @@ function renderCalibrationCurve(ev) {
 }
 
 function renderSweepChart(sweep, currentEv) {
-  const svg = document.getElementById('sweep-svg');
+  const svg = $('sweep-svg');
   const { points, best } = sweep;
   if (!points.length) return;
 
@@ -639,7 +582,7 @@ function renderSweepChart(sweep, currentEv) {
 }
 
 function renderDomainBreakdown() {
-  const tbody = document.getElementById('domain-breakdown-body');
+  const tbody = $('domain-breakdown-body');
   const keys = ['ALL', ...DOMAINS];
   const rows = keys.map((key) => ({ key, ...evaluateBacktestAtK(key, state.k) }));
 
@@ -672,7 +615,7 @@ function renderDomainBreakdown() {
 }
 
 function renderMarketsTable() {
-  const tbody = document.getElementById('markets-table-body');
+  const tbody = $('markets-table-body');
   const list = getFilteredMarkets();
 
   if (!list.length) {
@@ -741,42 +684,42 @@ function renderTracePanel() {
   if (!raw) return;
   const m = withLiveK(raw);
 
-  document.getElementById('trace-domain-badge').textContent = m.domain;
-  document.getElementById('trace-tail-badge').classList.toggle('hidden', !m.tailEvent);
-  document.getElementById('trace-question').textContent = m.question;
-  document.getElementById('trace-liquidity').textContent = `Liquidity: ${fmtCompact(m.liquidity)}`;
-  document.getElementById('trace-traders').textContent = `Traders: ${m.traderCount}`;
-  document.getElementById('trace-close').textContent = `Closes: ${m.closeDate}`;
-  document.getElementById('trace-link').href = m.url;
+  $('trace-domain-badge').textContent = m.domain;
+  $('trace-tail-badge').classList.toggle('hidden', !m.tailEvent);
+  $('trace-question').textContent = m.question;
+  $('trace-liquidity').textContent = `Liquidity: ${fmtCompact(m.liquidity)}`;
+  $('trace-traders').textContent = `Traders: ${m.traderCount}`;
+  $('trace-close').textContent = `Closes: ${m.closeDate}`;
+  $('trace-link').href = m.url;
 
-  document.getElementById('trace-rule-label').textContent = `Rule (k=${state.k.toFixed(2)})`;
-  document.getElementById('trace-base').textContent = fmtPct(m.domainBaseRate);
-  document.getElementById('trace-market').textContent = fmtPct(m.marketProb);
-  document.getElementById('trace-model').textContent = fmtPct(m.modelProb);
+  $('trace-rule-label').textContent = `Rule (k=${state.k.toFixed(2)})`;
+  $('trace-base').textContent = fmtPct(m.domainBaseRate);
+  $('trace-market').textContent = fmtPct(m.marketProb);
+  $('trace-model').textContent = fmtPct(m.modelProb);
 
-  const edgeEl = document.getElementById('trace-edge');
+  const edgeEl = $('trace-edge');
   edgeEl.textContent = fmtSignedPP(m.edge);
   edgeEl.className = `pb-val ${m.edge >= 0 ? 'good' : 'bad'}`;
 
-  document.getElementById('marker-base').style.left = `${(m.domainBaseRate * 100).toFixed(1)}%`;
-  document.getElementById('marker-market').style.left = `${(m.marketProb * 100).toFixed(1)}%`;
-  document.getElementById('marker-model').style.left = `${(m.modelProb * 100).toFixed(1)}%`;
+  $('marker-base').style.left = `${(m.domainBaseRate * 100).toFixed(1)}%`;
+  $('marker-market').style.left = `${(m.marketProb * 100).toFixed(1)}%`;
+  $('marker-model').style.left = `${(m.modelProb * 100).toFixed(1)}%`;
 
   const loMkt = logit(m.marketProb);
   const loMod = state.k * loMkt;
   const dir = m.edge >= 0 ? 'above' : 'below';
-  document.getElementById('trace-rule-comp').textContent =
+  $('trace-rule-comp').textContent =
     `Market p = ${fmtPct(m.marketProb)} -> logit ${loMkt >= 0 ? '+' : ''}${loMkt.toFixed(3)} x k=${state.k.toFixed(2)} = ${loMod >= 0 ? '+' : ''}${loMod.toFixed(3)} -> sigmoid = ${fmtPct(m.modelProb)} (${Math.abs(m.edge * 100).toFixed(1)} pp ${dir} crowd).`;
 
-  document.getElementById('trace-base-ctx').textContent = m.trace.baseRateContext;
-  document.getElementById('trace-template').textContent = m.trace.qualitativeTemplate;
-  document.getElementById('trace-falsifiers').innerHTML = m.trace.falsifiers
+  $('trace-base-ctx').textContent = m.trace.baseRateContext;
+  $('trace-template').textContent = m.trace.qualitativeTemplate;
+  $('trace-falsifiers').innerHTML = m.trace.falsifiers
     .map((f) => `<li>${escapeHtml(f)}</li>`)
     .join('');
 }
 
 function populateSandboxSelect() {
-  const select = document.getElementById('sandbox-market-select');
+  const select = $('sandbox-market-select');
   select.innerHTML = state.data.markets
     .map(
       (m) =>
@@ -793,8 +736,8 @@ function populateSandboxSelect() {
 
 function syncSandboxInputs() {
   const pct = Math.round(clampProb(state.sandboxProb) * 100);
-  document.getElementById('sandbox-slider').value = String(pct);
-  document.getElementById('sandbox-number').value = String(pct);
+  $('sandbox-slider').value = String(pct);
+  $('sandbox-number').value = String(pct);
 }
 
 function renderSandbox() {
@@ -806,10 +749,10 @@ function renderSandbox() {
   const pMkt = clampProb(m.marketProb);
   const pMod = clampProb(m.modelProb);
 
-  document.getElementById('sb-rule-label').textContent = `Rule (k=${state.k.toFixed(2)})`;
-  document.getElementById('sb-mkt-prob').textContent = fmtPct(pMkt);
-  document.getElementById('sb-mod-prob').textContent = fmtPct(pMod);
-  document.getElementById('sb-base-prob').textContent = fmtPct(m.domainBaseRate);
+  $('sb-rule-label').textContent = `Rule (k=${state.k.toFixed(2)})`;
+  $('sb-mkt-prob').textContent = fmtPct(pMkt);
+  $('sb-mod-prob').textContent = fmtPct(pMod);
+  $('sb-base-prob').textContent = fmtPct(m.domainBaseRate);
 
   const expBUser = expectedBrier(pUser, pMod);
   const expBMod = expectedBrier(pMod, pMod);
@@ -822,7 +765,7 @@ function renderSandbox() {
   const kl = klDivergence(pMod, pUser);
   const brierExcess = expBUser - expBMod;
 
-  const tbody = document.getElementById('sandbox-score-body');
+  const tbody = $('sandbox-score-body');
   tbody.innerHTML = `
     <tr>
       <td>If YES: Brier</td>
@@ -862,14 +805,14 @@ function renderSandbox() {
     </tr>
   `;
 
-  document.getElementById('sb-exp-brier').textContent = expBUser.toFixed(4);
-  document.getElementById('sb-exp-brier-diff').textContent =
+  $('sb-exp-brier').textContent = expBUser.toFixed(4);
+  $('sb-exp-brier-diff').textContent =
     brierExcess < 0.0005
       ? 'Matches Rule p* expectation'
       : `+${brierExcess.toFixed(4)} excess Brier vs. p*`;
-  document.getElementById('sb-kl-div').textContent = `${kl.toFixed(4)} nats`;
+  $('sb-kl-div').textContent = `${kl.toFixed(4)} nats`;
 
-  const verdict = document.getElementById('sandbox-verdict');
+  const verdict = $('sandbox-verdict');
   const dist = Math.abs(pUser - pMod);
   if (kl < 0.01) {
     verdict.className = 'verdict-banner good';
@@ -886,7 +829,7 @@ function renderSandbox() {
 }
 
 function renderSandboxSvg(pUser, pMod, pMkt) {
-  const svg = document.getElementById('sandbox-svg');
+  const svg = $('sandbox-svg');
   const W = 560;
   const H = 320;
   const pad = { top: 22, right: 24, bottom: 44, left: 48 };
@@ -951,6 +894,80 @@ function renderSandboxSvg(pUser, pMod, pMkt) {
    State Controllers & Events
    ========================================================================= */
 
+function renderLedger() {
+  const L = state.ledger;
+  const note = $('ledger-note');
+  const body = $('ledger-body');
+  if (!L || !Array.isArray(L.entries)) {
+    note.textContent = 'Ledger unavailable.';
+    body.innerHTML = '';
+    return;
+  }
+  const all = L.entries.filter((e) => state.domain === 'ALL' || e.domain === state.domain);
+  const resolved = all.filter((e) => e.status === 'resolved');
+  const open = all.filter((e) => e.status === 'open');
+  $('tab-ledger-count').textContent = String(L.entries.length);
+  note.textContent = `Append-only since ${L.startDateLabel}: each contract is logged once with the crowd price and the pre-registered rule (${L.ruleFormula}); entries are never edited, only scored when Manifold resolves them.`;
+
+  const avg = (arr, f) => (arr.length ? arr.reduce((a, e) => a + f(e), 0) / arr.length : null);
+  const bRule = avg(resolved, (e) => (e.modelProbAtLog - (e.resolution === 'YES' ? 1 : 0)) ** 2);
+  const bCrowd = avg(resolved, (e) => (e.marketProbAtLog - (e.resolution === 'YES' ? 1 : 0)) ** 2);
+  const nextClose = open.map((e) => e.closeDate).filter(Boolean).sort()[0] || '--';
+  $('ledger-kpis').innerHTML = `
+    <article class="kpi-card"><div class="kpi-top"><span class="kpi-title">Logged contracts</span></div>
+      <div class="kpi-value">${all.length}</div><div class="kpi-compare">${state.domain === 'ALL' ? 'All domains' : state.domain}</div></article>
+    <article class="kpi-card"><div class="kpi-top"><span class="kpi-title">Resolved / open</span></div>
+      <div class="kpi-value">${resolved.length} / ${open.length}</div><div class="kpi-compare">Next close: <strong>${nextClose}</strong></div></article>
+    <article class="kpi-card"><div class="kpi-top"><span class="kpi-title">Forward Brier (rule)</span></div>
+      <div class="kpi-value">${bRule === null ? '--' : bRule.toFixed(4)}</div><div class="kpi-compare">Crowd: <strong>${bCrowd === null ? '--' : bCrowd.toFixed(4)}</strong></div></article>
+    <article class="kpi-card"><div class="kpi-top"><span class="kpi-title">Track record</span></div>
+      <div class="kpi-value">${resolved.length ? fmtSignedPct((1 - bRule / Math.max(bCrowd, 1e-9)) * 100, 1) : 'pending'}</div><div class="kpi-compare">${resolved.length ? 'Brier skill vs crowd' : 'Scored only after resolution'}</div></article>
+  `;
+
+  const rows = all.filter((e) => state.ledgerFilter === 'all' || e.status === state.ledgerFilter);
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--ink-muted);padding:24px;">No ledger entries match this filter yet.</td></tr>`;
+    return;
+  }
+  body.innerHTML = rows
+    .map((e) => {
+      const y = e.resolution === 'YES' ? 1 : 0;
+      const scored = e.status === 'resolved';
+      const status = scored
+        ? `<span class="status-chip resolved">Resolved ${escapeHtml(e.resolution)}</span>`
+        : e.status === 'void'
+          ? `<span class="status-chip">Void</span>`
+          : `<span class="status-chip open">Open · closes ${escapeHtml(e.closeDate || '--')}</span>`;
+      const briers = scored
+        ? `${((e.modelProbAtLog - y) ** 2).toFixed(4)} / ${((e.marketProbAtLog - y) ** 2).toFixed(4)}`
+        : '<span style="color:var(--ink-muted)">pending</span>';
+      return `
+        <tr>
+          <td class="q-cell" data-label="Contract">
+            <a class="q-title-link" href="${escapeHtml(e.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(e.question)}</a>
+            <div class="q-meta"><span class="domain-pill">${escapeHtml(e.domain)}</span></div>
+          </td>
+          <td class="mono-cell" data-label="Logged">${escapeHtml(String(e.loggedAt).slice(0, 10))}</td>
+          <td class="num mono-cell" data-label="Crowd at log">${fmtPct(e.marketProbAtLog)}</td>
+          <td class="num mono-cell accent" data-label="Rule at log" style="font-weight:600">${fmtPct(e.modelProbAtLog)}</td>
+          <td data-label="Status">${status}</td>
+          <td class="num mono-cell" data-label="Brier rule / crowd">${briers}</td>
+        </tr>`;
+    })
+    .join('');
+}
+
+function ledgerCsv() {
+  const rows = ['id,domain,logged_at,close_date,question,url,crowd_prob_at_log,rule_prob_at_log,status,resolution,resolved_at'];
+  for (const e of (state.ledger?.entries || [])) {
+    rows.push([
+      e.id, e.domain, e.loggedAt, e.closeDate, `"${String(e.question).replaceAll('"', '""')}"`, e.url,
+      e.marketProbAtLog, e.modelProbAtLog, e.status, e.resolution ?? '', e.resolvedAt ?? '',
+    ].join(','));
+  }
+  return rows.join('\n');
+}
+
 function renderAll() {
   const ev = evaluateBacktestAtK(state.domain, state.k);
   const sweep = computeKSweep(state.domain);
@@ -963,23 +980,24 @@ function renderAll() {
   renderDomainBreakdown();
   renderMarketsTable();
   renderSandbox();
+  renderLedger();
 }
 
 function setView(viewName) {
   state.view = viewName;
-  document.querySelectorAll('.view-tab').forEach((btn) => {
+  root.querySelectorAll('.view-tab').forEach((btn) => {
     const active = btn.dataset.view === viewName;
     btn.classList.toggle('active', active);
     btn.setAttribute('aria-selected', String(active));
   });
-  document.querySelectorAll('.view-panel').forEach((sec) => {
+  root.querySelectorAll('.view-panel').forEach((sec) => {
     sec.classList.toggle('hidden', sec.id !== `view-${viewName}`);
   });
 }
 
 function setDomain(domain) {
   state.domain = domain;
-  document.querySelectorAll('.domain-btn').forEach((btn) => {
+  root.querySelectorAll('.domain-btn').forEach((btn) => {
     const active = btn.dataset.domain === domain;
     btn.classList.toggle('active', active);
     btn.setAttribute('aria-pressed', String(active));
@@ -993,19 +1011,30 @@ function setK(val) {
 }
 
 function bindEvents() {
-  document.querySelectorAll('.view-tab').forEach((btn) => {
+  $('btn-export-backtest').addEventListener('click', () => {
+    downloadText(`manifold-backtest-${state.domain.toLowerCase()}-k${state.k.toFixed(2)}.csv`, backtestCsv(), 'text/csv;charset=utf-8;');
+  });
+  $('btn-export-ledger').addEventListener('click', () => {
+    downloadText('forward-ledger.csv', ledgerCsv(), 'text/csv;charset=utf-8;');
+  });
+  $('ledger-filter').addEventListener('change', (e) => {
+    state.ledgerFilter = e.target.value;
+    renderLedger();
+  });
+
+  root.querySelectorAll('.view-tab').forEach((btn) => {
     btn.addEventListener('click', () => setView(btn.dataset.view));
   });
 
-  document.querySelectorAll('.domain-btn').forEach((btn) => {
+  root.querySelectorAll('.domain-btn').forEach((btn) => {
     btn.addEventListener('click', () => setDomain(btn.dataset.domain));
   });
 
-  document.getElementById('k-slider').addEventListener('input', (e) => {
+  $('k-slider').addEventListener('input', (e) => {
     setK(Number(e.target.value));
   });
 
-  document.querySelectorAll('.k-presets .chip-btn').forEach((btn) => {
+  root.querySelectorAll('.k-presets .chip-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       if (btn.dataset.k === 'optimal') {
         const val = Number(btn.dataset.kVal);
@@ -1017,7 +1046,7 @@ function bindEvents() {
   });
 
   // Allow clicking directly on the k-sweep chart to scrub k
-  const sweepSvg = document.getElementById('sweep-svg');
+  const sweepSvg = $('sweep-svg');
   sweepSvg.addEventListener('click', (e) => {
     const rect = sweepSvg.getBoundingClientRect();
     const relX = ((e.clientX - rect.left) / rect.width) * 460;
@@ -1027,39 +1056,39 @@ function bindEvents() {
     setK(K_MIN + frac * (K_MAX - K_MIN));
   });
 
-  document.getElementById('toggle-market-curve').addEventListener('change', (e) => {
+  $('toggle-market-curve').addEventListener('change', (e) => {
     state.showMarketCurve = e.target.checked;
     renderCalibrationCurve(evaluateBacktestAtK(state.domain, state.k));
   });
 
-  document.getElementById('toggle-tail-zones').addEventListener('change', (e) => {
+  $('toggle-tail-zones').addEventListener('change', (e) => {
     state.showTailZones = e.target.checked;
     renderCalibrationCurve(evaluateBacktestAtK(state.domain, state.k));
   });
 
-  document.getElementById('market-search').addEventListener('input', (e) => {
+  $('market-search').addEventListener('input', (e) => {
     state.search = e.target.value;
     renderMarketsTable();
   });
 
-  document.getElementById('market-sort').addEventListener('change', (e) => {
+  $('market-sort').addEventListener('change', (e) => {
     state.sort = e.target.value;
     renderMarketsTable();
   });
 
-  document.getElementById('btn-load-sandbox').addEventListener('click', () => {
+  $('btn-load-sandbox').addEventListener('click', () => {
     const m = state.data.markets.find((x) => x.id === state.selectedMarketId);
     if (!m) return;
     state.sandboxMarketId = m.id;
     state.sandboxProb = m.marketProb;
-    document.getElementById('sandbox-market-select').value = m.id;
+    $('sandbox-market-select').value = m.id;
     syncSandboxInputs();
     renderSandbox();
     setView('sandbox');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    root.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
-  document.getElementById('sandbox-market-select').addEventListener('change', (e) => {
+  $('sandbox-market-select').addEventListener('change', (e) => {
     state.sandboxMarketId = e.target.value;
     const m = state.data.markets.find((x) => x.id === state.sandboxMarketId);
     if (m) {
@@ -1069,20 +1098,20 @@ function bindEvents() {
     }
   });
 
-  document.getElementById('sandbox-slider').addEventListener('input', (e) => {
+  $('sandbox-slider').addEventListener('input', (e) => {
     state.sandboxProb = Number(e.target.value) / 100;
-    document.getElementById('sandbox-number').value = e.target.value;
+    $('sandbox-number').value = e.target.value;
     renderSandbox();
   });
 
-  document.getElementById('sandbox-number').addEventListener('input', (e) => {
+  $('sandbox-number').addEventListener('input', (e) => {
     const val = Math.max(1, Math.min(99, Number(e.target.value) || 50));
     state.sandboxProb = val / 100;
-    document.getElementById('sandbox-slider').value = String(val);
+    $('sandbox-slider').value = String(val);
     renderSandbox();
   });
 
-  document.querySelectorAll('[data-preset]').forEach((btn) => {
+  root.querySelectorAll('[data-preset]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const raw = state.data.markets.find((x) => x.id === state.sandboxMarketId);
       if (!raw) return;
@@ -1102,6 +1131,15 @@ async function init() {
     const resp = await fetch('./data/markets.json');
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     state.data = await resp.json();
+    if (!Array.isArray(state.data?.backtest?.records) || !state.data.backtest.records.length) {
+      throw new Error('markets.json has no per-market backtest records');
+    }
+    try {
+      const lr = await fetch('./data/forward_ledger.json');
+      if (lr.ok) state.ledger = await lr.json();
+    } catch {
+      state.ledger = null;
+    }
     state.selectedMarketId = state.data.markets[0]?.id || null;
     state.sandboxMarketId = state.data.markets[0]?.id || null;
     state.sandboxProb = state.data.markets[0]?.marketProb ?? 0.5;
@@ -1111,9 +1149,12 @@ async function init() {
     syncSandboxInputs();
     renderAll();
   } catch (err) {
-    document.getElementById('feed-status').textContent = 'Data load error';
+    $('feed-status').textContent = 'Data load error';
     console.error('Failed to load markets.json:', err);
   }
 }
 
+
+root.innerHTML = TEMPLATE;
 init();
+}

@@ -1,16 +1,14 @@
 {
-  "name": "calibrated-world-model-forecasting-engine",
-  "version": "2.0.0",
+  "name": "calibrated-forecasting-risk-lab",
   "private": true,
-  "description": "Calibrated World-Model & Forecasting Engine by Mohammed KM",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "fetch-data": "python3 scripts/fetch_markets.py",
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "fetch-data": "python3 scripts/fetch_markets.py"
   },
-  "devDependencies": {
-    "vite": "^6.2.0"
-  }
+  "dependencies": { "react": "^19.0.0", "react-dom": "^19.0.0" },
+  "devDependencies": { "@types/react": "^19.0.0", "@types/react-dom": "^19.0.0", "@vitejs/plugin-react": "^4.3.4", "typescript": "^5.7.2", "vite": "^6.0.0" }
 }

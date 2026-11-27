@@ -1,11 +1,11 @@
 {
-  "updated_at": "2026-11-26T21:17:30Z",
+  "updated_at": "2026-11-27T07:02:42Z",
   "meta": {
     "title": "Calibrated Forecasting Engine",
     "version": "3.0.0",
     "author": "Mohammed KM",
-    "generatedAt": "2026-11-26T21:17:30Z",
-    "updated_at": "2026-11-26T21:17:30Z",
+    "generatedAt": "2026-11-27T07:02:42Z",
+    "updated_at": "2026-11-27T07:02:42Z",
     "refreshSchedule": "weekly automated refresh",
     "dataMode": "live",
     "liveMarketsCount": 20,
@@ -31,7 +31,8 @@
     "resolvedCount": 0,
     "openCount": 20,
     "summary": "Track record starts 26 Nov 2026; 0 resolved",
-    "ledgerPath": "data/forward_ledger.json"
+    "ledgerPath": "data/forward_ledger.json",
+    "publicPath": "data/forward_ledger.json"
   },
   "backtest": {
     "resolvedCount": 132,
@@ -448,7 +449,1197 @@
           }
         ]
       }
-    }
+    },
+    "records": [
+      {
+        "id": "eA3yD1uVD5ZJdWnA9RzZ",
+        "question": "Will the US experience a recession in 2022?",
+        "url": "https://manifold.markets/fortenforge/will-the-us-experience-a-recession",
+        "domain": "Macro",
+        "marketProb": 0.3688,
+        "y": 0,
+        "resolvedAt": "2022-03-31"
+      },
+      {
+        "id": "YZj0gXBHUhHeW56tPvuf",
+        "question": "Will any nuclear facility, either power generation, disposal or Chernobyl exclusion zone within Ukraine cause any danger to the public in the next couple months?",
+        "url": "https://manifold.markets/PatrickDelaney/will-any-nuclear-facility-either-po",
+        "domain": "Energy",
+        "marketProb": 0.0474,
+        "y": 0,
+        "resolvedAt": "2022-05-12"
+      },
+      {
+        "id": "LFhN8fRJ5iTFrhMYiQUI",
+        "question": "Will we fund \"Brain-inspired AGI\"?",
+        "url": "https://manifold.markets/clearthinkbot/will-we-fund-braininspired-agi",
+        "domain": "AI",
+        "marketProb": 0.1962,
+        "y": 0,
+        "resolvedAt": "2022-10-01"
+      },
+      {
+        "id": "dTqYscag1tkoo1PaG01r",
+        "question": "Will all nuclear power plants in Germany be shut down in 2022?",
+        "url": "https://manifold.markets/ZhaoNan/will-all-nuclear-power-plants-in-ge",
+        "domain": "Energy",
+        "marketProb": 0.015,
+        "y": 0,
+        "resolvedAt": "2022-12-31"
+      },
+      {
+        "id": "DfZMmo3gWMYyEcaTayFh",
+        "question": "Will there be a serious incident involving leakage of radioactive material at the Zaporizhzhia Nuclear Power Plant during 2022?",
+        "url": "https://manifold.markets/Keepcalmandchill/will-there-be-a-serious-incident-in",
+        "domain": "Energy",
+        "marketProb": 0.046,
+        "y": 0,
+        "resolvedAt": "2022-12-31"
+      },
+      {
+        "id": "uimvtjsqMytnreyHaP9M",
+        "question": "Will there be a US recession before the end of 2022?",
+        "url": "https://manifold.markets/Donald/will-there-be-a-us-recession-before",
+        "domain": "Macro",
+        "marketProb": 0.0971,
+        "y": 0,
+        "resolvedAt": "2022-12-31"
+      },
+      {
+        "id": "fcyLnV7t6eg0PPjABQzN",
+        "question": "Will any fusion reactor project demonstrate engineering breakeven before the end of 2022?",
+        "url": "https://manifold.markets/karlkeefer/will-any-fusion-reactor-project-dem",
+        "domain": "Energy",
+        "marketProb": 0.0187,
+        "y": 0,
+        "resolvedAt": "2023-01-01"
+      },
+      {
+        "id": "huXKb5kM9X82nw9m3ouP",
+        "question": "Will Russia test it's Poseidon nuclear-powered torpedo by the end of 2022?",
+        "url": "https://manifold.markets/BTE/will-russia-test-its-poseidon-nucle",
+        "domain": "Energy",
+        "marketProb": 0.4358,
+        "y": 0,
+        "resolvedAt": "2023-01-01"
+      },
+      {
+        "id": "xK10cyPqPCORD56wMIRQ",
+        "question": "Will there be a demilitarized safe zone around the Zaporizhzhya nuclear power plant in 2022?",
+        "url": "https://manifold.markets/ahalekelly/will-there-be-a-demilitarized-safe",
+        "domain": "Energy",
+        "marketProb": 0.0741,
+        "y": 0,
+        "resolvedAt": "2023-01-01"
+      },
+      {
+        "id": "dqT1zTTyQx06C6NMlDGQ",
+        "question": "Will China's FDA grant approval to an mRNA COVID vaccine by the end of 2022?",
+        "url": "https://manifold.markets/BTE/will-chinas-fda-grant-approval-to-a",
+        "domain": "Biotech",
+        "marketProb": 0.0873,
+        "y": 0,
+        "resolvedAt": "2023-01-01"
+      },
+      {
+        "id": "EHzLVwWjp7dSREKYQvHc",
+        "question": "Will OpenAI release GPT-4 by the end of January, 2023?",
+        "url": "https://manifold.markets/k3nneth/will-openai-release-gpt4-by-the-end",
+        "domain": "AI",
+        "marketProb": 0.053,
+        "y": 0,
+        "resolvedAt": "2023-02-01"
+      },
+      {
+        "id": "wvxlkfPK7ojR8nw9NYtb",
+        "question": "Will Bing integrate ChatGPT from OpenAI before the end of 2023'Q1?",
+        "url": "https://manifold.markets/RealityQuotient/will-bing-integrate-chatgpt-from-op",
+        "domain": "AI",
+        "marketProb": 0.29,
+        "y": 1,
+        "resolvedAt": "2023-02-09"
+      },
+      {
+        "id": "qYj1RPY0V4CNQ37MCRQ3",
+        "question": "Will the Future Fund pay a prize for p(AGI before 2043) > 45%?",
+        "url": "https://manifold.markets/rossry/will-the-future-fund-pay-a-prize-fo-58959fc584ca",
+        "domain": "AI",
+        "marketProb": 0.0142,
+        "y": 0,
+        "resolvedAt": "2023-02-24"
+      },
+      {
+        "id": "tOFIEmstIrnmbEd8OVj8",
+        "question": "Will the Future Fund pay a prize for p(misalignment x-risk|AGI) > 35%?",
+        "url": "https://manifold.markets/rossry/will-the-future-fund-pay-a-prize-fo-1fd10e3d0f1a",
+        "domain": "AI",
+        "marketProb": 0.0191,
+        "y": 0,
+        "resolvedAt": "2023-02-24"
+      },
+      {
+        "id": "FNAd7QlqGK1uIHJhao6I",
+        "question": "Will Anthropic OR Deepmind publish their alignment plan before March 1, 2023?",
+        "url": "https://manifold.markets/Samuel/will-anthropic-or-deepmind-publish",
+        "domain": "AI",
+        "marketProb": 0.0991,
+        "y": 0,
+        "resolvedAt": "2023-03-01"
+      },
+      {
+        "id": "FX7NIaINEltjfh1cRtxd",
+        "question": "Will Destiny debate someone on the Project Veritas vaccine mutation claim by the end of February?",
+        "url": "https://manifold.markets/johnleoks/will-destiny-debate-someone-on-the-53c371e2ba67",
+        "domain": "Biotech",
+        "marketProb": 0.1029,
+        "y": 0,
+        "resolvedAt": "2023-03-01"
+      },
+      {
+        "id": "WEVTlUCC986nOdOm0owK",
+        "question": "39. Will OpenAI release GPT-4 in 2023?",
+        "url": "https://manifold.markets/ACXBot/39-will-openai-release-gpt4-in-2023",
+        "domain": "AI",
+        "marketProb": 0.9246,
+        "y": 1,
+        "resolvedAt": "2023-03-14"
+      },
+      {
+        "id": "IWAS6Nb3rogUSWDAmMUt",
+        "question": "Before 2025, will the US FDA authorize use of an at-home over-the-counter rapid test for influenza?",
+        "url": "https://manifold.markets/Pepe/before-2025-will-the-us-fda-authori",
+        "domain": "Biotech",
+        "marketProb": 0.74,
+        "y": 1,
+        "resolvedAt": "2023-03-17"
+      },
+      {
+        "id": "NCInWsq7S21URveVoeRo",
+        "question": "Will more than 275,000,000 people get at least one shot of the Covid-19 vaccine by March 31st 2023?",
+        "url": "https://manifold.markets/tofu/will-more-than-275000000-people-get",
+        "domain": "Biotech",
+        "marketProb": 0.0543,
+        "y": 0,
+        "resolvedAt": "2023-03-31"
+      },
+      {
+        "id": "QcDI0yu0TeWZxJlIVuSs",
+        "question": "Will there be a recession in the US within the next 12 months?",
+        "url": "https://manifold.markets/OliverS/will-there-be-a-recession-in-the-us",
+        "domain": "Macro",
+        "marketProb": 0.0992,
+        "y": 0,
+        "resolvedAt": "2023-04-08"
+      },
+      {
+        "id": "mWQC0AOgmTxz95OtNJfO",
+        "question": "Will Ukraine And Russia Agree to a Nuclear Safety and Security Protection Zone Around the Zaporizhzhya Nuclear Power Plant By May 1, 2023?",
+        "url": "https://manifold.markets/SereneDesiree/will-ukraine-and-russia-agree-to-a",
+        "domain": "Energy",
+        "marketProb": 0.1039,
+        "y": 0,
+        "resolvedAt": "2023-05-01"
+      },
+      {
+        "id": "HTfJOY9Om27Js9mjR2ng",
+        "question": "Will OpenAI release a text-to-speech model before June 2023?",
+        "url": "https://manifold.markets/synquid/will-openai-release-a-texttospeech",
+        "domain": "AI",
+        "marketProb": 0.0706,
+        "y": 0,
+        "resolvedAt": "2023-05-31"
+      },
+      {
+        "id": "wufJm53wgghFxOB1U71Q",
+        "question": "Will Anthropic Return The Funds they Received from SBF?",
+        "url": "https://manifold.markets/EricJang/will-anthropic-return-the-funds-the",
+        "domain": "AI",
+        "marketProb": 0.0741,
+        "y": 0,
+        "resolvedAt": "2023-06-03"
+      },
+      {
+        "id": "ndJNTZ68TsphAhWsz2xl",
+        "question": "Will a device from Neuralink receive FDA approval in 2023 for implantation in a human?",
+        "url": "https://manifold.markets/JanLukasR/will-a-device-from-neuralink-receiv",
+        "domain": "Biotech",
+        "marketProb": 0.3327,
+        "y": 1,
+        "resolvedAt": "2023-06-09"
+      },
+      {
+        "id": "OLwjZNyoLO8BsAK47SqO",
+        "question": "Will there be a recession in the EU during the 2022-2023 winter?",
+        "url": "https://manifold.markets/phl43/will-there-be-a-recession-in-the-eu",
+        "domain": "Macro",
+        "marketProb": 0.31,
+        "y": 0,
+        "resolvedAt": "2023-06-29"
+      },
+      {
+        "id": "DbXhE65qhBoRF02mpArc",
+        "question": "Will OpenAI or DeepMind make a public announcement that they intend to delay some work that would improve AI capabilities due to safety/alignment concerns?",
+        "url": "https://manifold.markets/RobertWiblin/will-openai-or-deepmind-make-a-publ",
+        "domain": "AI",
+        "marketProb": 0.1646,
+        "y": 0,
+        "resolvedAt": "2023-06-30"
+      },
+      {
+        "id": "eqiuNbni9FLzVJxD1oV2",
+        "question": "Will an article with reliable evidence of Putin having a debilitating illness (e.g. cancer or parkinson's) be published by July 2023?",
+        "url": "https://manifold.markets/ChrisCanal/will-an-article-with-reliable-evide",
+        "domain": "Biotech",
+        "marketProb": 0.0248,
+        "y": 0,
+        "resolvedAt": "2023-07-01"
+      },
+      {
+        "id": "9KFWAlx03XYpta5XnFXe",
+        "question": "Will the Zaporizhzhia Nuclear Power Plant be destroyed this summer?",
+        "url": "https://manifold.markets/nickten/will-the-zaporizhzhia-nuclear-power",
+        "domain": "Energy",
+        "marketProb": 0.0487,
+        "y": 0,
+        "resolvedAt": "2023-08-31"
+      },
+      {
+        "id": "RvniKv6mYY9stNAF4Ha7",
+        "question": "Will the FDA update their acceptable daily intake of aspartame by the end of August?",
+        "url": "https://manifold.markets/Sketchy/will-the-fda-update-their-acceptabl",
+        "domain": "Biotech",
+        "marketProb": 0.0565,
+        "y": 0,
+        "resolvedAt": "2023-09-01"
+      },
+      {
+        "id": "seFraeQb5BejECu2h5dg",
+        "question": "Will either RSV vaccine currently under review be accepted for both children and the elderly by the end of August?",
+        "url": "https://manifold.markets/Lorxus/will-either-rsv-vaccine-currently-u",
+        "domain": "Biotech",
+        "marketProb": 0.8768,
+        "y": 0,
+        "resolvedAt": "2023-09-01"
+      },
+      {
+        "id": "vqDu5TH8gWhgk8sSVMKI",
+        "question": "Will the Fed raise interest rates at the Sept 2023 meeting?",
+        "url": "https://manifold.markets/breck/will-the-fed-raise-interest-rates-a",
+        "domain": "Macro",
+        "marketProb": 0.0741,
+        "y": 0,
+        "resolvedAt": "2023-09-20"
+      },
+      {
+        "id": "UsmPg2BVhRNLLAm9vYQl",
+        "question": "Will the US Fed announce increase in interest rates on Sep 20?",
+        "url": "https://manifold.markets/SorenGoyal/will-the-us-fed-announce-increase-i",
+        "domain": "Macro",
+        "marketProb": 0.0958,
+        "y": 0,
+        "resolvedAt": "2023-09-20"
+      },
+      {
+        "id": "sHOKqHoIHUkIFSpxZVOw",
+        "question": "Will the Bank of England raise the UK's interest rate at their 21st September meeting?",
+        "url": "https://manifold.markets/SimonGrayson/will-the-bank-of-england-raise-the",
+        "domain": "Macro",
+        "marketProb": 0.8907,
+        "y": 0,
+        "resolvedAt": "2023-09-21"
+      },
+      {
+        "id": "dkT1degGK43373v10nUv",
+        "question": "Will J. Powell raise interest rates by 25 bps in the FOMC meeting on September 20th?",
+        "url": "https://manifold.markets/Cap/will-j-powell-raise-interest-rates",
+        "domain": "Macro",
+        "marketProb": 0.0438,
+        "y": 0,
+        "resolvedAt": "2023-09-21"
+      },
+      {
+        "id": "fD7XRvrK14gCeLfdlUAk",
+        "question": "Will we ever cure cancer?",
+        "url": "https://manifold.markets/Jingliu/will-we-ever-cure-cancer",
+        "domain": "Biotech",
+        "marketProb": 0.79,
+        "y": 0,
+        "resolvedAt": "2023-10-01"
+      },
+      {
+        "id": "1XZrW8Dd1sybGjVvrw8b",
+        "question": "Will China's FDA grant approval to an mRNA COVID vaccine by the end of 2023?",
+        "url": "https://manifold.markets/BTE/will-chinas-fda-grant-approval-to-a-0816c7879354",
+        "domain": "Biotech",
+        "marketProb": 0.6952,
+        "y": 1,
+        "resolvedAt": "2023-10-10"
+      },
+      {
+        "id": "kqZgS7mfonUKG2gKqe2Z",
+        "question": "Will Google make a 10 figure investment in Anthropic by the end of 2023?",
+        "url": "https://manifold.markets/BTE/will-google-make-a-10-figure-invest",
+        "domain": "AI",
+        "marketProb": 0.3061,
+        "y": 1,
+        "resolvedAt": "2023-10-27"
+      },
+      {
+        "id": "E4xZOmrVNUDhjDEYK4vj",
+        "question": "Will the Fed raise interest rates in the October-November 2023 meeting?",
+        "url": "https://manifold.markets/chrisjbillington/will-the-fed-raise-interest-rates-i",
+        "domain": "Macro",
+        "marketProb": 0.0278,
+        "y": 0,
+        "resolvedAt": "2023-11-01"
+      },
+      {
+        "id": "f1XHEVMh0D8ILKftBLSY",
+        "question": "Will the Bank of England raise the UK's interest rate at their 2nd November meeting?",
+        "url": "https://manifold.markets/SimonGrayson/will-the-bank-of-england-raise-the-e2de754262d5",
+        "domain": "Macro",
+        "marketProb": 0.2277,
+        "y": 0,
+        "resolvedAt": "2023-11-02"
+      },
+      {
+        "id": "NvY5lr3aYI86IefH92nu",
+        "question": "Will Sam Altman cease to be CEO of OpenAI before 2030?",
+        "url": "https://manifold.markets/cash/will-sam-altman-cease-to-be-ceo-of",
+        "domain": "AI",
+        "marketProb": 0.35,
+        "y": 1,
+        "resolvedAt": "2023-11-18"
+      },
+      {
+        "id": "yihwMmQsJTKMeVCQ5jKz",
+        "question": "\ud83d\udc8aWill FDA approve 50 or more novel drugs in 2023?",
+        "url": "https://manifold.markets/Tossup/will-fda-approve-50-or-more-novel-d",
+        "domain": "Biotech",
+        "marketProb": 0.9244,
+        "y": 1,
+        "resolvedAt": "2023-11-18"
+      },
+      {
+        "id": "RrYIOaGgVMa90tJ5txPo",
+        "question": "Sam Altman will return to OpenAI by the end of Nov 2023",
+        "url": "https://manifold.markets/J_/sam-altman-will-return-to-openai-by-e3571a4d9921",
+        "domain": "AI",
+        "marketProb": 0.9588,
+        "y": 1,
+        "resolvedAt": "2023-11-30"
+      },
+      {
+        "id": "BfxZdvFPssQMP5s6BcKh",
+        "question": "Will Sam Altman return to being the CEO of OpenAI before the end of 2024?",
+        "url": "https://manifold.markets/IsaacKing/will-sam-altman-return-to-beign-the",
+        "domain": "AI",
+        "marketProb": 0.9598,
+        "y": 1,
+        "resolvedAt": "2023-11-30"
+      },
+      {
+        "id": "yxaML3Aqto3f6O5eY6Sr",
+        "question": "Will ClariPi's ClariAdipo product receive FDA 510K clearance by December 1, 2023?",
+        "url": "https://manifold.markets/algorithmovigilance/will-claripis-clariadipo-product-re",
+        "domain": "Biotech",
+        "marketProb": 0.1879,
+        "y": 0,
+        "resolvedAt": "2023-11-30"
+      },
+      {
+        "id": "QmbcAe0Ymj1kCZWMC2zh",
+        "question": "Will Lucida Medical's Prostate Intelligence (Pi) product receive FDA 510K clearance by December 1, 2023?",
+        "url": "https://manifold.markets/algorithmovigilance/will-lucida-medicals-prostate-intel",
+        "domain": "Biotech",
+        "marketProb": 0.1907,
+        "y": 0,
+        "resolvedAt": "2023-11-30"
+      },
+      {
+        "id": "GId6aoHFeAZSCuGBO5O9",
+        "question": "Will ClariPi's ClariOsteo product receive FDA 510K clearance by December 1, 2023?",
+        "url": "https://manifold.markets/algorithmovigilance/will-claripis-clariosteo-product-re",
+        "domain": "Biotech",
+        "marketProb": 0.1973,
+        "y": 0,
+        "resolvedAt": "2023-11-30"
+      },
+      {
+        "id": "38PABBWEvpwAX042uoqW",
+        "question": "Will ClariPi's ClariACE product receive FDA 510K clearance by December 1, 2023?",
+        "url": "https://manifold.markets/algorithmovigilance/will-claripis-clariace-product-rece",
+        "domain": "Biotech",
+        "marketProb": 0.1984,
+        "y": 0,
+        "resolvedAt": "2023-11-30"
+      },
+      {
+        "id": "drcQGvXd7f8tOClLU7XE",
+        "question": "Will a first-ever CRISPR-based gene editing therapy be approved by the FDA by the end of 2023?",
+        "url": "https://manifold.markets/SG123/will-a-firstever-crisprbased-gene-e",
+        "domain": "Biotech",
+        "marketProb": 0.9353,
+        "y": 1,
+        "resolvedAt": "2023-12-07"
+      },
+      {
+        "id": "5NR4ySKFuJsf6hslfRYH",
+        "question": "Will OpenAI announce a dedicated grant program for external AI alignment research projects? (2024)",
+        "url": "https://manifold.markets/Mira/will-openai-announce-a-dedicated-gr",
+        "domain": "AI",
+        "marketProb": 0.3787,
+        "y": 1,
+        "resolvedAt": "2023-12-14"
+      },
+      {
+        "id": "N3OHXm0eZSqqAmF7AHFT",
+        "question": "Will the Bank of England raise the UK's interest rate at their 14th December meeting?",
+        "url": "https://manifold.markets/SimonGrayson/will-the-bank-of-england-raise-the-a63a31cb1de3",
+        "domain": "Macro",
+        "marketProb": 0.0309,
+        "y": 0,
+        "resolvedAt": "2023-12-14"
+      },
+      {
+        "id": "2y3iJ5DQDvSWmCxVeSHb",
+        "question": "Will Takeda's Dengue vaccine be incorporated into the Brazilian National Immunization Program until Dec 21st, 2023?",
+        "url": "https://manifold.markets/BernardoChrispimBaron/will-takedas-dengue-vaccine-be-inco",
+        "domain": "Biotech",
+        "marketProb": 0.0407,
+        "y": 1,
+        "resolvedAt": "2023-12-22"
+      },
+      {
+        "id": "jY8v0BV5W500k1zjpvdk",
+        "question": "Will GPT-4 visual model (as released by OpenAI) show ability to tell if an object is inside or outside another object?",
+        "url": "https://manifold.markets/_deleted_/will-gpt4-visual-model-as-released",
+        "domain": "AI",
+        "marketProb": 0.9497,
+        "y": 1,
+        "resolvedAt": "2023-12-26"
+      },
+      {
+        "id": "v4DVlgSxDGayoTDyxpuQ",
+        "question": "The US will not approve a nasal vaccine for Covid-19 [in 2023]",
+        "url": "https://manifold.markets/abcdef/the-us-will-not-approve-a-nasal-vac",
+        "domain": "Biotech",
+        "marketProb": 0.966,
+        "y": 1,
+        "resolvedAt": "2023-12-30"
+      },
+      {
+        "id": "AUIbz5jMurr1bPi24Ulf",
+        "question": "The US will slip into recession during 2023",
+        "url": "https://manifold.markets/abcdef/the-us-will-slip-into-recession-dur",
+        "domain": "Macro",
+        "marketProb": 0.0336,
+        "y": 0,
+        "resolvedAt": "2023-12-30"
+      },
+      {
+        "id": "oUt0TYlOA4WVofIqvSmH",
+        "question": "Will OpenAI, Anthropic, or DeepMind suffer a significant data breach by the end of 2023?",
+        "url": "https://manifold.markets/RobertWiblin/will-openai-anthropic-or-deepmind-s",
+        "domain": "AI",
+        "marketProb": 0.054,
+        "y": 0,
+        "resolvedAt": "2023-12-31"
+      },
+      {
+        "id": "nNapEDsq59bhPQ5SrHMO",
+        "question": "Will OpenAI have >$200 million in revenue in 2023?",
+        "url": "https://manifold.markets/Gigacasting/will-openai-have-200-million-in-rev",
+        "domain": "AI",
+        "marketProb": 0.9855,
+        "y": 1,
+        "resolvedAt": "2023-12-31"
+      },
+      {
+        "id": "DjYRMIQ0iYu4CcZ8hd4v",
+        "question": "Will we reach AGI by the End of 2023?",
+        "url": "https://manifold.markets/CameronJohnson/will-we-reach-agi-by-the-end-of-202",
+        "domain": "AI",
+        "marketProb": 0.0222,
+        "y": 0,
+        "resolvedAt": "2023-12-31"
+      },
+      {
+        "id": "HRhv92NTikar5GFGckVA",
+        "question": "7. Will an issue involving a nuclear power plant in Ukraine require evacuation of a populated area in 2023?",
+        "url": "https://manifold.markets/ACXBot/7-will-an-issue-involving-a-nuclear",
+        "domain": "Energy",
+        "marketProb": 0.0103,
+        "y": 0,
+        "resolvedAt": "2023-12-31"
+      },
+      {
+        "id": "7hCoHFEBe1tYOEB93Ul3",
+        "question": "Will there be a nuclear disaster at the Zaporizhzhia nuclear power plant in 2023?",
+        "url": "https://manifold.markets/billyhumblebrag/will-there-be-a-nuclear-disaster-at",
+        "domain": "Energy",
+        "marketProb": 0.0327,
+        "y": 0,
+        "resolvedAt": "2023-12-31"
+      },
+      {
+        "id": "1kBRL3QjzEKEyTe8uoLN",
+        "question": "Will Helion achieve breakeven deuterium-tritium fusion before 2024?",
+        "url": "https://manifold.markets/NcyRocks/will-helion-achieve-breakeven-deute",
+        "domain": "Energy",
+        "marketProb": 0.0244,
+        "y": 0,
+        "resolvedAt": "2023-12-31"
+      },
+      {
+        "id": "h8Y4tWlfUZIakgvSSG6u",
+        "question": "Will any fusion reactor demonstrate >2:1 energy efficiency by the end of 2023?",
+        "url": "https://manifold.markets/TonyJackson/will-any-fusion-reactor-demonstrate",
+        "domain": "Energy",
+        "marketProb": 0.0716,
+        "y": 0,
+        "resolvedAt": "2023-12-31"
+      },
+      {
+        "id": "dY0K6jGiZl7cPBkkWV74",
+        "question": "Will Scientists at the NIF produce a net energy gain > 200% from a fusion reaction in 2023?",
+        "url": "https://manifold.markets/JamesBills/will-scientists-at-the-nif-produce",
+        "domain": "Energy",
+        "marketProb": 0.0613,
+        "y": 0,
+        "resolvedAt": "2023-12-31"
+      },
+      {
+        "id": "SqaNUIJd67LBcuhpxAhH",
+        "question": "Will a meteorite hit a nuclear power plant site in 2023? \u2604\ufe0f",
+        "url": "https://manifold.markets/oracleofosaka/will-a-meteorite-hit-a-nuclear-powe",
+        "domain": "Energy",
+        "marketProb": 0.01,
+        "y": 0,
+        "resolvedAt": "2023-12-31"
+      },
+      {
+        "id": "SBQqWia7fv39cbE7TsSL",
+        "question": "Will an attack on the ZNPP (Zaporizhzhia Nuclear Power Station) be reported by mainstream news media in 2023",
+        "url": "https://manifold.markets/JamesRomeril/will-an-attack-on-the-znpp-zaporizh",
+        "domain": "Energy",
+        "marketProb": 0.051,
+        "y": 0,
+        "resolvedAt": "2023-12-31"
+      },
+      {
+        "id": "8xK6Mp3MI5Oxf6LZ2jON",
+        "question": "43. Will a new version of COVID be substantially able to escape Omicron vaccines in 2023?",
+        "url": "https://manifold.markets/ACXBot/43-will-a-new-version-of-covid-be-s",
+        "domain": "Biotech",
+        "marketProb": 0.0679,
+        "y": 0,
+        "resolvedAt": "2023-12-31"
+      },
+      {
+        "id": "ykqeYPawGl3JsKUBIoUN",
+        "question": "Will a Covid vaccine be pulled off the market due to safety concerns in 2023?",
+        "url": "https://manifold.markets/MaximilianG/will-a-covid-vaccine-be-pulled-off",
+        "domain": "Biotech",
+        "marketProb": 0.0613,
+        "y": 0,
+        "resolvedAt": "2023-12-31"
+      },
+      {
+        "id": "gAIqaReRQazRo5YwVttp",
+        "question": "FDA legalizes MDMA for clinical use in 2023",
+        "url": "https://manifold.markets/ian/fda-legalizes-mdma-for-clinical-use",
+        "domain": "Biotech",
+        "marketProb": 0.0362,
+        "y": 0,
+        "resolvedAt": "2023-12-31"
+      },
+      {
+        "id": "Bq3JTTe37xMBId0RGtrI",
+        "question": "Will Steve Kirsch and Rootclaim debate vaccine deaths for money in 2023?",
+        "url": "https://manifold.markets/DavidJohnston/will-steve-kirsch-and-rootclaim-deb",
+        "domain": "Biotech",
+        "marketProb": 0.0346,
+        "y": 0,
+        "resolvedAt": "2023-12-31"
+      },
+      {
+        "id": "7bGmK0Gd5R7vhDCsE2KD",
+        "question": "Will there be a technical recession in the US in 2023?",
+        "url": "https://manifold.markets/MarcusAbramovitch/will-there-be-a-recession-in-2023",
+        "domain": "Macro",
+        "marketProb": 0.0362,
+        "y": 0,
+        "resolvedAt": "2023-12-31"
+      },
+      {
+        "id": "gTOKWu1Jt7VPUT6ghBoT",
+        "question": "Will the European Central Bank raise the interest rates until the end of 2023?",
+        "url": "https://manifold.markets/cdrummondb/will-the-european-central-bank-rais",
+        "domain": "Macro",
+        "marketProb": 0.0367,
+        "y": 0,
+        "resolvedAt": "2023-12-31"
+      },
+      {
+        "id": "2Z5ZAsowMVbfcZFXZFgJ",
+        "question": "Economy 2023: No recession in 2023?",
+        "url": "https://manifold.markets/itsTomekK/economy-2023-no-recession-in-2023",
+        "domain": "Macro",
+        "marketProb": 0.9654,
+        "y": 1,
+        "resolvedAt": "2023-12-31"
+      },
+      {
+        "id": "CwezLZZymiTwpHuxsBDP",
+        "question": "Will the Reserve Bank of Australia cut interest rates in 2023?",
+        "url": "https://manifold.markets/chrisjbillington/will-the-reserve-bank-of-australia",
+        "domain": "Macro",
+        "marketProb": 0.0124,
+        "y": 0,
+        "resolvedAt": "2023-12-31"
+      },
+      {
+        "id": "N4PwSuA7jH9c2y7ucaG2",
+        "question": "Will Germany experience negative economic growth for two consecutive quarters in 2023? (Recession in Germany)",
+        "url": "https://manifold.markets/MaxG/will-germany-experience-negative-ec",
+        "domain": "Macro",
+        "marketProb": 0.8827,
+        "y": 0,
+        "resolvedAt": "2023-12-31"
+      },
+      {
+        "id": "rJKj8nDbD5iE9q9iKV0V",
+        "question": "Will the EU interest rate be above 3.3% at the end of 2023?",
+        "url": "https://manifold.markets/MAcs19R1/will-the-eu-interest-rate-be-above",
+        "domain": "Macro",
+        "marketProb": 0.9685,
+        "y": 1,
+        "resolvedAt": "2023-12-31"
+      },
+      {
+        "id": "DiQa2NdTibulbGB7WIAj",
+        "question": "Will the Russian Central Bank raise interest rates to or above 20% by EOY 2023?",
+        "url": "https://manifold.markets/JoeD/will-the-russian-central-bank-raise",
+        "domain": "Macro",
+        "marketProb": 0.0605,
+        "y": 0,
+        "resolvedAt": "2023-12-31"
+      },
+      {
+        "id": "VjRTt8a1pHvGCyAy5GcT",
+        "question": "Will Sam Altman be the CEO of OpenAI on January 1st 2024?",
+        "url": "https://manifold.markets/milanw/will-sam-altman-be-the-ceo-of-opena",
+        "domain": "AI",
+        "marketProb": 0.9856,
+        "y": 1,
+        "resolvedAt": "2024-01-01"
+      },
+      {
+        "id": "aUsvvf14Vy25yONXQME9",
+        "question": "Will there be a OpenAI LLM known as GPT-4.5 in 2023?",
+        "url": "https://manifold.markets/DylanSlagh/will-there-be-a-openai-llm-known-as-274de7c5c20f",
+        "domain": "AI",
+        "marketProb": 0.04,
+        "y": 0,
+        "resolvedAt": "2024-01-01"
+      },
+      {
+        "id": "iFLhyWzqFhYLjTPbEacT",
+        "question": "Will Ilya Sutskever continue at OpenAI til end 2023?",
+        "url": "https://manifold.markets/Ernie/will-ilya-continue-at-openai-til-en-ed4458877834",
+        "domain": "AI",
+        "marketProb": 0.9501,
+        "y": 1,
+        "resolvedAt": "2024-01-01"
+      },
+      {
+        "id": "d57KVV2IG2LoBij4L4PE",
+        "question": "The Board of OpenAI resigns by 2024",
+        "url": "https://manifold.markets/MichaelTrazzi/the-board-of-openai-resigns-by-2024",
+        "domain": "AI",
+        "marketProb": 0.0539,
+        "y": 0,
+        "resolvedAt": "2024-01-01"
+      },
+      {
+        "id": "zVyCPJFgbBLnXhinQW36",
+        "question": "Will OpenAI and Anthropic announce they're merging into one in 2023?",
+        "url": "https://manifold.markets/MP/will-openai-and-anthropic-announce-886791226ba1",
+        "domain": "AI",
+        "marketProb": 0.0228,
+        "y": 0,
+        "resolvedAt": "2024-01-01"
+      },
+      {
+        "id": "qFOSIjC7loduse8hxKlC",
+        "question": "Will there be credible reports of major, successful IP theft against OpenAI by the end of 2023?",
+        "url": "https://manifold.markets/MilfordHammerschmidt/will-there-be-credible-reports-of-s",
+        "domain": "AI",
+        "marketProb": 0.0933,
+        "y": 0,
+        "resolvedAt": "2024-01-01"
+      },
+      {
+        "id": "4H6g2pWn9Db9kTAARPQi",
+        "question": "Will there be credible reports of major, successful IP theft against Anthropic by the end of 2023?",
+        "url": "https://manifold.markets/MilfordHammerschmidt/will-there-be-credible-reports-of-s-24763f8245d9",
+        "domain": "AI",
+        "marketProb": 0.0498,
+        "y": 0,
+        "resolvedAt": "2024-01-01"
+      },
+      {
+        "id": "ATkEOn1HEnTBGfWH6FgS",
+        "question": "Will Ukraine regain control of the Zaporizhzhia Nuclear Power Plant before January 1, 2024?",
+        "url": "https://manifold.markets/MetaculusBot/will-ukraine-regain-control-of-the",
+        "domain": "Energy",
+        "marketProb": 0.0213,
+        "y": 0,
+        "resolvedAt": "2024-01-01"
+      },
+      {
+        "id": "hFG0ibiUhMLi7DbA0DLv",
+        "question": "Will at least 6 new nuclear power plants connect to the grid in 2023?",
+        "url": "https://manifold.markets/Akzzz123/will-at-least-6-new-nuclear-power-p",
+        "domain": "Energy",
+        "marketProb": 0.0112,
+        "y": 0,
+        "resolvedAt": "2024-01-01"
+      },
+      {
+        "id": "tn3RxUi77WYyFnNtUFsU",
+        "question": "Will any fusion reactor project demonstrate engineering breakeven before the end of 2023?",
+        "url": "https://manifold.markets/karlkeefer/will-any-fusion-reactor-project-dem-b0da77e5de75",
+        "domain": "Energy",
+        "marketProb": 0.0201,
+        "y": 0,
+        "resolvedAt": "2024-01-01"
+      },
+      {
+        "id": "uUpkhDS3LA3zrXrZvF76",
+        "question": "Were any of the COVID-19 vaccines designed to cause infertility, contain microchips, or have any other secret effects?",
+        "url": "https://manifold.markets/ahalekelly/were-any-of-the-covid19-vaccines-de",
+        "domain": "Biotech",
+        "marketProb": 0.0404,
+        "y": 0,
+        "resolvedAt": "2024-01-01"
+      },
+      {
+        "id": "j2CEb6gJBwDc3HQt7nc2",
+        "question": "Will any product built using a large language model receive FDA clearance by the end of 2023?",
+        "url": "https://manifold.markets/BTE/will-any-product-built-using-a-larg",
+        "domain": "Biotech",
+        "marketProb": 0.0105,
+        "y": 0,
+        "resolvedAt": "2024-01-01"
+      },
+      {
+        "id": "NKtuQVZlyvshA5nghjQE",
+        "question": "Will Apple receive any new FDA clearance by the end of 2023?",
+        "url": "https://manifold.markets/BTE/will-apple-receive-any-new-fda-clea-a61867fd1107",
+        "domain": "Biotech",
+        "marketProb": 0.0669,
+        "y": 0,
+        "resolvedAt": "2024-01-01"
+      },
+      {
+        "id": "nwuYkoxH5Vv9NT5vr9qb",
+        "question": "Will the Chinese FDA approve any US pharmaceutical company COVID therapy or vaccine in 2023?",
+        "url": "https://manifold.markets/BTE/will-the-chinese-fda-approve-any-us",
+        "domain": "Biotech",
+        "marketProb": 0.0647,
+        "y": 0,
+        "resolvedAt": "2024-01-01"
+      },
+      {
+        "id": "fsGRYGkPJagURNKxPgtZ",
+        "question": "Will an mRNA influenza vaccine be available in 2023?",
+        "url": "https://manifold.markets/egroj/will-an-mrna-influenza-vaccine-be-a",
+        "domain": "Biotech",
+        "marketProb": 0.0151,
+        "y": 0,
+        "resolvedAt": "2024-01-01"
+      },
+      {
+        "id": "zLi51AyprJAqZKTEDYEY",
+        "question": "Will cancer become a significant cause area for EA by the end of 2023?",
+        "url": "https://manifold.markets/IsaacKing/will-cancer-become-a-significant-ca",
+        "domain": "Biotech",
+        "marketProb": 0.0364,
+        "y": 0,
+        "resolvedAt": "2024-01-01"
+      },
+      {
+        "id": "at4SfIwNAVDpHZCMUkQf",
+        "question": "Will the United States be in a recession by the end of 2023?",
+        "url": "https://manifold.markets/SBF/will-the-united-states-be-in-a-rece",
+        "domain": "Macro",
+        "marketProb": 0.0525,
+        "y": 0,
+        "resolvedAt": "2024-01-01"
+      },
+      {
+        "id": "U0qrVKDIF2z75CXb1j8N",
+        "question": "Did the US officially enter a recession in 2022? (Announcement by NBER)",
+        "url": "https://manifold.markets/jack/did-the-us-officially-enter-a-reces",
+        "domain": "Macro",
+        "marketProb": 0.0208,
+        "y": 0,
+        "resolvedAt": "2024-01-01"
+      },
+      {
+        "id": "XwashsQwug36durrhsBe",
+        "question": "Will the Bank of Canada raise interest rates in Q4 2023?",
+        "url": "https://manifold.markets/cash/will-the-bank-of-canada-raise-inter",
+        "domain": "Macro",
+        "marketProb": 0.011,
+        "y": 0,
+        "resolvedAt": "2024-01-01"
+      },
+      {
+        "id": "rK52OtlkjovFyTcxPrxJ",
+        "question": "Will the Real-time Sahm Rule Recession Indicator read above 0.5 percentage points by the end of 2023?",
+        "url": "https://manifold.markets/chrisjbillington/will-the-realtime-sahm-rule-recessi",
+        "domain": "Macro",
+        "marketProb": 0.0677,
+        "y": 0,
+        "resolvedAt": "2024-01-01"
+      },
+      {
+        "id": "LfSjbN8DAnzFkT3aSH84",
+        "question": "Will Ilya Sutskever leave OpenAI by January 1st, 2024?",
+        "url": "https://manifold.markets/CarterHinsley/will-ilya-sutskever-leave-openai-by",
+        "domain": "AI",
+        "marketProb": 0.0677,
+        "y": 0,
+        "resolvedAt": "2024-01-02"
+      },
+      {
+        "id": "ycGGMktLZ5tA0t2pKJtf",
+        "question": "Will the fed raise interest rates again prior to 01/01/2024",
+        "url": "https://manifold.markets/KennySilva/will-the-fed-raise-interest-rates-a-9d4842b81da4",
+        "domain": "Macro",
+        "marketProb": 0.0248,
+        "y": 0,
+        "resolvedAt": "2024-01-02"
+      },
+      {
+        "id": "IxB74SW0mHdGXAYlUtWG",
+        "question": "Will OpenAI be valued more than $75 billion before the end of 2023?",
+        "url": "https://manifold.markets/Samuel/will-openai-be-valued-more-than-75",
+        "domain": "AI",
+        "marketProb": 0.1997,
+        "y": 0,
+        "resolvedAt": "2024-01-03"
+      },
+      {
+        "id": "RnbxSxZvZlQ7oKudoNyN",
+        "question": "Will the Fed lower interest rates in its upcoming January meeting?",
+        "url": "https://manifold.markets/NathanDickson/will-the-fed-lower-interest-rates-i",
+        "domain": "Macro",
+        "marketProb": 0.02,
+        "y": 0,
+        "resolvedAt": "2024-01-31"
+      },
+      {
+        "id": "uibJ6H09qKy1vmrVLvky",
+        "question": "Will there be any agreement to slow down AI development, between OpenAI/Microsoft, Google and Anthropic before 2024?",
+        "url": "https://manifold.markets/NathanpmYoung/will-there-be-any-agreement-to-slow",
+        "domain": "AI",
+        "marketProb": 0.062,
+        "y": 0,
+        "resolvedAt": "2024-02-05"
+      },
+      {
+        "id": "lBHGnExYcye2ck7mR5Br",
+        "question": "Will the UK enter into a recession in the next 6 months (by the 1st of July 2024)",
+        "url": "https://manifold.markets/joeym4/will-the-uk-enter-into-a-recession",
+        "domain": "Macro",
+        "marketProb": 0.181,
+        "y": 1,
+        "resolvedAt": "2024-02-15"
+      },
+      {
+        "id": "zAv75hGNmQWMGIrjOpZX",
+        "question": "Will OpenAI, DeepMind, or Anthropic announce a new model on Pi Day 2024?",
+        "url": "https://manifold.markets/derikk/will-openai-deepmind-or-anthropic-a",
+        "domain": "AI",
+        "marketProb": 0.1648,
+        "y": 0,
+        "resolvedAt": "2024-03-15"
+      },
+      {
+        "id": "3xXvCL8aKO0n4ms5KEZq",
+        "question": "Will OpenAI become significantly less closed source as a result of the leadership transition?",
+        "url": "https://manifold.markets/jacksonpolack/will-openai-become-significantly-le",
+        "domain": "AI",
+        "marketProb": 0.0393,
+        "y": 0,
+        "resolvedAt": "2024-03-17"
+      },
+      {
+        "id": "VdCFr6W3ijPlTqpabCls",
+        "question": "Will OpenAI release GPT 4.5 or GPT 5 before April 2024?",
+        "url": "https://manifold.markets/Joshua/will-openai-release-gpt45-or-whatev",
+        "domain": "AI",
+        "marketProb": 0.0357,
+        "y": 0,
+        "resolvedAt": "2024-04-01"
+      },
+      {
+        "id": "4CTjjeXrYOkJiY4qbtv0",
+        "question": "Will OpenAI launch an Image Editor for Dall-E 3 (e.g. in-painting) before April 2024?",
+        "url": "https://manifold.markets/Soli/will-openai-launch-an-image-editor",
+        "domain": "AI",
+        "marketProb": 0.1484,
+        "y": 1,
+        "resolvedAt": "2024-04-01"
+      },
+      {
+        "id": "59HswyRJq0agIhxXwicF",
+        "question": "Is the Reuters story about OpenAI's Q* substantively true?",
+        "url": "https://manifold.markets/ZviMowshowitz/is-the-reuters-story-about-openais",
+        "domain": "AI",
+        "marketProb": 0.0884,
+        "y": 0,
+        "resolvedAt": "2024-04-02"
+      },
+      {
+        "id": "uxXhuK3wgiJ2kwYYeJR9",
+        "question": "Will OpenAI announce that they will stop using freely crawled data for training large language models, by April 9 2024?",
+        "url": "https://manifold.markets/Rodeo/will-openai-announce-that-they-will",
+        "domain": "AI",
+        "marketProb": 0.0448,
+        "y": 0,
+        "resolvedAt": "2024-04-10"
+      },
+      {
+        "id": "jVfiL85X4I7DZyEYbkfU",
+        "question": "There will be a newly created market about fusion w/ more than 1k bettors in it by June 1 2024",
+        "url": "https://manifold.markets/Ernie/there-will-be-a-newly-created-marke-80fabf82dcda",
+        "domain": "Energy",
+        "marketProb": 0.06,
+        "y": 0,
+        "resolvedAt": "2024-06-01"
+      },
+      {
+        "id": "fkpERW5HXcGB4yUPPJXx",
+        "question": "There will be a newly created market about fusion w/ more than 3k bettors in it by June 1 2024",
+        "url": "https://manifold.markets/Ernie/there-will-be-a-newly-created-marke",
+        "domain": "Energy",
+        "marketProb": 0.0213,
+        "y": 0,
+        "resolvedAt": "2024-06-02"
+      },
+      {
+        "id": "tbi31olhi2",
+        "question": "Will Ukraine take control of the Kursk Nuclear Power Plant by the end of this month?",
+        "url": "https://manifold.markets/CertaintyOfVictory/will-ukraine-take-control-of-the-ku",
+        "domain": "Energy",
+        "marketProb": 0.0527,
+        "y": 0,
+        "resolvedAt": "2024-08-31"
+      },
+      {
+        "id": "miyw2eiqvt",
+        "question": "Will Ukraine take control of the Kursk Nuclear Power Plant by the end of this month?",
+        "url": "https://manifold.markets/CertaintyOfVictory/will-ukraine-take-control-of-the-ku-a5cxqghsz7",
+        "domain": "Energy",
+        "marketProb": 0.0264,
+        "y": 0,
+        "resolvedAt": "2024-09-30"
+      },
+      {
+        "id": "NNFsykHxmnU2Qj80uY0u",
+        "question": "Will the world find a cure for cancer within the next 12 months?",
+        "url": "https://manifold.markets/cibyr/will-the-world-find-a-cure-for-canc",
+        "domain": "Biotech",
+        "marketProb": 0.0124,
+        "y": 0,
+        "resolvedAt": "2024-11-24"
+      },
+      {
+        "id": "97pLstwRFCcD4zeOrO7R",
+        "question": "Will Helion achieve Q>1 deuterium-tritium fusion before 2025?",
+        "url": "https://manifold.markets/NcyRocks/will-helion-achieve-q1-deuteriumtri",
+        "domain": "Energy",
+        "marketProb": 0.1103,
+        "y": 0,
+        "resolvedAt": "2024-12-31"
+      },
+      {
+        "id": "4VXMUTMKVwqrAlB5sgMv",
+        "question": "Will Russia launch the vaccine for cancer by the end of 2024?",
+        "url": "https://manifold.markets/CreativeCulture/will-russia-launch-the-vaccine-for",
+        "domain": "Biotech",
+        "marketProb": 0.0558,
+        "y": 0,
+        "resolvedAt": "2024-12-31"
+      },
+      {
+        "id": "IGhjmoMpKNiXikilX67x",
+        "question": "Will Helion's Polaris fusion reactor produce net electricity by Jan 1st, 2025?",
+        "url": "https://manifold.markets/JamesG/will-helions-polaris-fusion-reactor",
+        "domain": "Energy",
+        "marketProb": 0.0241,
+        "y": 0,
+        "resolvedAt": "2025-01-01"
+      },
+      {
+        "id": "MBVKIt5fvZeUZ5uK7gvt",
+        "question": "Will the US officially enter a recession in 2023? (Announcement by NBER)",
+        "url": "https://manifold.markets/VivaLaPanda/will-the-us-officially-enter-a-rece",
+        "domain": "Macro",
+        "marketProb": 0.0432,
+        "y": 0,
+        "resolvedAt": "2025-01-01"
+      },
+      {
+        "id": "tmspHWmlYCTvQfhhaq42",
+        "question": "Will we get fusion reactors before 2025?",
+        "url": "https://manifold.markets/RemNi/will-we-get-fusion-reactors-before-d18e9fd38cd1",
+        "domain": "Energy",
+        "marketProb": 0.01,
+        "y": 0,
+        "resolvedAt": "2025-03-01"
+      },
+      {
+        "id": "nQHwZ7Zqai39vtSZn1fo",
+        "question": "Will we get a cure for cancer before 2025?",
+        "url": "https://manifold.markets/RemNi/will-we-get-a-cure-for-cancer-befor-bf2acb801224",
+        "domain": "Biotech",
+        "marketProb": 0.01,
+        "y": 0,
+        "resolvedAt": "2025-03-01"
+      },
+      {
+        "id": "hR8lhRO9gz",
+        "question": "Do professional economic forecasters expect a US recession (two quarters negative GDP growth) to begin in 2025?",
+        "url": "https://manifold.markets/chrisjbillington/do-professional-economic-forecaster",
+        "domain": "Macro",
+        "marketProb": 0.5893,
+        "y": 0,
+        "resolvedAt": "2025-05-16"
+      },
+      {
+        "id": "D5o5fIGpQnjANdl2DxdU",
+        "question": "Will there be a US recession by EOY2025?",
+        "url": "https://manifold.markets/turtlepurple/will-there-be-a-us-recession-by-eoy",
+        "domain": "Macro",
+        "marketProb": 0.0109,
+        "y": 0,
+        "resolvedAt": "2025-12-26"
+      },
+      {
+        "id": "DZPSvEW40ZosS1YxtOra",
+        "question": "Will Helion achieve breakeven deuterium-helium-3 fusion before 2026?",
+        "url": "https://manifold.markets/NcyRocks/will-helion-achieve-breakeven-deute-59548b0d04dc",
+        "domain": "Energy",
+        "marketProb": 0.0172,
+        "y": 0,
+        "resolvedAt": "2025-12-31"
+      },
+      {
+        "id": "Qg82L0z2Qd",
+        "question": "Marathon Fusion gold alchemy preprint published by the end of 2025?",
+        "url": "https://manifold.markets/bens/marathon-fusion-gold-alchemy-prepri",
+        "domain": "Energy",
+        "marketProb": 0.1085,
+        "y": 0,
+        "resolvedAt": "2025-12-31"
+      },
+      {
+        "id": "igE3p3PU8c0DPWl1Vzto",
+        "question": "Will a private company demonstrate nuclear fusion net gain (>1.0 energy out vs energy in) before 12/31/2025?",
+        "url": "https://manifold.markets/CharlesCarriere/will-a-private-company-demonstrate",
+        "domain": "Energy",
+        "marketProb": 0.0631,
+        "y": 0,
+        "resolvedAt": "2026-01-01"
+      },
+      {
+        "id": "OThS3s7N8YFA1RhEmwdh",
+        "question": "Will Commonwealth Fusion Systems (CFS) will demonstrate net energy gain (Q>1) in their SPARC reactor before 12/31/2025?",
+        "url": "https://manifold.markets/CharlesCarriere/commonwealth-fusion-systems-cfs-wil",
+        "domain": "Energy",
+        "marketProb": 0.0554,
+        "y": 0,
+        "resolvedAt": "2026-01-01"
+      },
+      {
+        "id": "UNLXa1RJdMxg9VmaYTrF",
+        "question": "Will Commonwealth Fusion System's SPARC fusion reactor achieve \"commercially relevant net energy from fusion\" by Jan 1st, 2026?",
+        "url": "https://manifold.markets/JamesG/will-commonwealth-fusion-systems-sp",
+        "domain": "Energy",
+        "marketProb": 0.0496,
+        "y": 0,
+        "resolvedAt": "2026-01-01"
+      },
+      {
+        "id": "tQq7R3zzBphgCEU2DzeZ",
+        "question": "Will General Fusion's Oxford demonstration plant be operational before Jan 1st, 2026?",
+        "url": "https://manifold.markets/JamesG/will-general-fusions-oxford-demonst",
+        "domain": "Energy",
+        "marketProb": 0.0329,
+        "y": 0,
+        "resolvedAt": "2026-01-01"
+      },
+      {
+        "id": "znAn6UsqQI",
+        "question": "Has Lockheed Martin developed a compact fusion reactor?",
+        "url": "https://manifold.markets/bens/has-lockheed-martin-developed-a-com",
+        "domain": "Energy",
+        "marketProb": 0.0369,
+        "y": 0,
+        "resolvedAt": "2026-01-01"
+      },
+      {
+        "id": "IMLre6PYIQgsesV6Wa6O",
+        "question": "Did the US enter a recession before the end of 2024?",
+        "url": "https://manifold.markets/chrisjbillington/will-the-us-enter-a-recession-by-20",
+        "domain": "Macro",
+        "marketProb": 0.0104,
+        "y": 0,
+        "resolvedAt": "2026-01-01"
+      },
+      {
+        "id": "li0uRjHBX4BnqOBrXBkV",
+        "question": "Will \"introduction to cancer vaccines\" make the top fifty posts in LessWrong's 2024 Annual Review?",
+        "url": "https://manifold.markets/LessWrong/will-introduction-to-cancer-vaccine",
+        "domain": "Biotech",
+        "marketProb": 0.1332,
+        "y": 0,
+        "resolvedAt": "2026-02-01"
+      },
+      {
+        "id": "UgTyIp9sqtvuCvUthPeC",
+        "question": "Will we get fusion reactors before 2026?",
+        "url": "https://manifold.markets/RemNi/will-we-get-fusion-reactors-before-a380452919f1",
+        "domain": "Energy",
+        "marketProb": 0.0139,
+        "y": 0,
+        "resolvedAt": "2026-02-28"
+      },
+      {
+        "id": "f2i3zt28mm",
+        "question": "Will the US enter a recession by end of 2025? (Two quarters negative GDP growth)",
+        "url": "https://manifold.markets/jack/will-the-us-enter-a-recession-by-en",
+        "domain": "Macro",
+        "marketProb": 0.0107,
+        "y": 0,
+        "resolvedAt": "2026-03-29"
+      },
+      {
+        "id": "ElSLRhzqyR",
+        "question": "US recession in 2026?",
+        "url": "https://manifold.markets/brod/us-recession-in-2026",
+        "domain": "Macro",
+        "marketProb": 0.0417,
+        "y": 0,
+        "resolvedAt": "2026-11-17"
+      }
+    ]
   },
   "markets": [
     {

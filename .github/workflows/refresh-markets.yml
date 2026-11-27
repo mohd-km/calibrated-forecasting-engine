@@ -45,11 +45,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet public/data/markets.json; then
-            echo "No changes to public/data/markets.json"
+          if git diff --quiet -- public/data data; then
+            echo "No data changes"
             exit 0
           fi
           UPDATED_AT=$(python3 -c "import json; print(json.load(open('public/data/markets.json'))['updated_at'])")
-          git add public/data/markets.json
+          git add public/data data
           git commit -m "chore(data): weekly Manifold Markets refresh (${UPDATED_AT})"
           git push
