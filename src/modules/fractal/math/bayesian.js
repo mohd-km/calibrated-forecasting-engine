@@ -7,7 +7,7 @@ export const BAYESIAN_PRESETS = {
     fpr: 0.01,
     hypothesisLabel: 'Condition present',
     evidenceLabel: 'Positive screen',
-    summary: 'A 99% accurate screen on a 1% base rate still yields roughly half false alarms.'
+    summary: 'A 99% accurate test for something only 1 in 100 people have: half of all positive results are false alarms.'
   },
   trading: {
     id: 'trading',
@@ -17,17 +17,17 @@ export const BAYESIAN_PRESETS = {
     fpr: 0.15,
     hypothesisLabel: 'True alpha regime',
     evidenceLabel: 'Indicator trigger',
-    summary: 'Most breakout triggers fire in noise unless the underlying edge is frequent.'
+    summary: 'When real opportunities are rare, most trading signals fire on noise.'
   },
   vc: {
     id: 'vc',
-    label: 'VC deal filter',
+    label: 'Startup filter',
     prior: 0.02,
     sensitivity: 0.8,
     fpr: 0.1,
     hypothesisLabel: 'Outlier company',
     evidenceLabel: 'Top-tier signal',
-    summary: 'Rare power-law winners mean strong founder filters still require deep diligence.'
+    summary: 'Huge startup winners are so rare that even a strong filter mostly flags companies that will not be one.'
   }
 };
 

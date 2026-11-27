@@ -22,7 +22,7 @@ export function renderSimpsonChartSvg(simpson) {
       isAggregate: false
     },
     {
-      title: 'Aggregate total',
+      title: 'All cases combined',
       a: aggA,
       b: aggB,
       y: 176,
@@ -108,7 +108,7 @@ export function renderBaseRateMosaicSvg(trap) {
 
       <!-- Area caption -->
       <text x="${pad.left}" y="${height - 8}" font-family="Inter, sans-serif" font-size="12" fill="#444444">
-        Per 10,000: <tspan font-family="JetBrains Mono, monospace" font-weight="600" fill="#1d4ed8">${trap.per10k.tp} TP</tspan> vs <tspan font-family="JetBrains Mono, monospace" font-weight="600" fill="#111111">${trap.per10k.fp} FP</tspan> (${(trap.falseAlarmShare * 100).toFixed(1)}% false alarms)
+        Per 10,000 tested: <tspan font-family="JetBrains Mono, monospace" font-weight="600" fill="#1d4ed8">${trap.per10k.tp} real</tspan> vs <tspan font-family="JetBrains Mono, monospace" font-weight="600" fill="#111111">${trap.per10k.fp} false alarms</tspan> (${(trap.falseAlarmShare * 100).toFixed(1)}%)
       </text>
     </svg>
   `;

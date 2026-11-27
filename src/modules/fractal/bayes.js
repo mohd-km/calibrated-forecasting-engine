@@ -14,13 +14,13 @@ export function mountBayes(root) {
     <div class="lab-shell">
       <section class="mod-section">
         <h2 class="mod-h2">Bayesian posterior updater</h2>
-        <p class="mod-lead">Pick a preset or slide each probability; the posterior, natural-frequency grid and prior-to-posterior curve recompute from Bayes' theorem. Preset numbers are illustrative.</p>
+        <p class="mod-lead">Pick an example or move the sliders. The updated belief (posterior), the grid of 1,000 people and the curve all recompute from Bayes' rule. Example numbers are illustrative.</p>
         <div class="workspace-grid workspace-grid--sidebar">
           <aside class="card">
             <div class="card-head">
               <div>
-                <h3 class="card-title">Evidence parameters</h3>
-                <p class="card-desc">Medical screen, trading signal or VC deal filter.</p>
+                <h3 class="card-title">Your test</h3>
+                <p class="card-desc">A medical screen, a trading signal or a startup filter: same maths.</p>
               </div>
             </div>
 
@@ -28,34 +28,34 @@ export function mountBayes(root) {
 
             <div class="control-group">
               <div class="control-row">
-                <label class="control-label" for="by-prior">Prior probability P(H)</label>
+                <label class="control-label" for="by-prior">How common it is to begin with (prior, P(H))</label>
                 <span class="control-readout" id="by-val-prior">1.0%</span>
               </div>
               <input id="by-prior" type="range" min="0.1" max="95" step="0.1" value="1.0" />
-              <p class="control-hint">Base rate before observing any new evidence.</p>
+              <p class="control-hint">Your starting belief, before any test result.</p>
             </div>
 
             <div class="control-group">
               <div class="control-row">
-                <label class="control-label" for="by-sens">Sensitivity P(E | H)</label>
+                <label class="control-label" for="by-sens">Catch rate when it is true (sensitivity)</label>
                 <span class="control-readout" id="by-val-sens">99.0%</span>
               </div>
               <input id="by-sens" type="range" min="5" max="99.9" step="0.1" value="99.0" />
-              <p class="control-hint">True-positive rate when the hypothesis holds.</p>
+              <p class="control-hint">How often the test says yes when the thing really is there, P(E | H). This is the likelihood of the evidence.</p>
             </div>
 
             <div class="control-group">
               <div class="control-row">
-                <label class="control-label" for="by-fpr">False-positive rate P(E | &not;H)</label>
+                <label class="control-label" for="by-fpr">False alarm rate, P(E | not H)</label>
                 <span class="control-readout" id="by-val-fpr">1.0%</span>
               </div>
               <input id="by-fpr" type="range" min="0.1" max="80" step="0.1" value="1.0" />
-              <p class="control-hint">Chance of a false alarm when the null is true.</p>
+              <p class="control-hint">How often the test says yes when the thing is not there.</p>
             </div>
 
             <div class="btn-row">
-              <button type="button" class="btn btn--primary" id="by-add">Add independent signal</button>
-              <button type="button" class="btn" id="by-reset">1 signal</button>
+              <button type="button" class="btn btn--primary" id="by-add">Add another positive result</button>
+              <button type="button" class="btn" id="by-reset">Back to 1 result</button>
             </div>
           </aside>
 
@@ -63,7 +63,7 @@ export function mountBayes(root) {
             <div class="card">
               <div class="posterior-hero">
                 <div>
-                  <p class="kpi-label" id="by-hero-label">Posterior probability P(H | E)</p>
+                  <p class="kpi-label" id="by-hero-label">Chance it is really true after a positive result (posterior)</p>
                   <div class="posterior-number" id="by-posterior">50.0%</div>
                 </div>
                 <p class="card-desc" id="by-summary" style="max-width:38ch;margin:0;"></p>
@@ -75,8 +75,8 @@ export function mountBayes(root) {
               <div class="card">
                 <div class="card-head">
                   <div>
-                    <h3 class="card-title">1,000-case natural frequency grid</h3>
-                    <p class="card-desc">Each tile represents 5 cases out of 1,000 tested.</p>
+                    <h3 class="card-title">The same sum, as 1,000 people</h3>
+                    <p class="card-desc">Each tile is 5 of 1,000 people tested.</p>
                   </div>
                 </div>
                 <div id="by-matrix"></div>
@@ -86,8 +86,8 @@ export function mountBayes(root) {
               <div class="card">
                 <div class="card-head">
                   <div>
-                    <h3 class="card-title">Prior-to-posterior curve</h3>
-                    <p class="card-desc">How the same test behaves across every possible base rate.</p>
+                    <h3 class="card-title">Same test, different starting points</h3>
+                    <p class="card-desc">Across: how common the thing is (prior). Up: belief after a positive result (posterior).</p>
                   </div>
                 </div>
                 <div id="by-curve"></div>
@@ -97,16 +97,16 @@ export function mountBayes(root) {
         </div>
 
         <details class="formula-box">
-          <summary>Bayes' theorem &amp; why p-values are not posteriors</summary>
+          <summary>Bayes' rule, written out (formulas)</summary>
           <div class="formula-content">
             <div class="formula-grid">
               <div class="formula-item">
                 <code>P(H | E) = [P(E | H) P(H)] / [P(E | H) P(H) + P(E | &not;H) P(&not;H)]</code>
-                <p>Posterior equals prior times likelihood, normalised by total evidence probability.</p>
+                <p>Updated belief = starting belief &times; how likely the evidence is if true, divided by how likely the evidence is overall.</p>
               </div>
               <div class="formula-item">
                 <code>Bayes factor (LR+) = P(E | H) / P(E | &not;H)</code>
-                <p>Odds multiply by LR+ on each independent positive signal; low priors still need strong LR+.</p>
+                <p>Each independent positive result multiplies the odds by this factor. A rare starting point needs very strong evidence.</p>
               </div>
             </div>
           </div>
@@ -115,13 +115,13 @@ export function mountBayes(root) {
 
       <section class="mod-section">
         <h2 class="mod-h2">Statistical traps playground</h2>
-        <p class="mod-lead">Two ways correct-looking numbers mislead: aggregation that reverses a subgroup result, and a highly accurate test on a rare event.</p>
+        <p class="mod-lead">Two ways true numbers can still fool you: a winner in every group that loses overall, and a very accurate test for something rare.</p>
         <div class="workspace-grid workspace-grid--two">
           <div class="card">
             <div class="card-head">
               <div>
                 <h3 class="card-title">Simpson's paradox</h3>
-                <p class="card-desc">One option wins every subgroup yet loses overall when weights skew.</p>
+                <p class="card-desc">A beats B in every group, yet loses overall, because A was tested mostly on the hard cases.</p>
               </div>
               <span class="status-pill" id="sp-status">PARADOX ACTIVE</span>
             </div>
@@ -171,7 +171,7 @@ export function mountBayes(root) {
 
             <div class="control-group">
               <div class="control-row">
-                <label class="control-label" for="br-rate">True population base rate</label>
+                <label class="control-label" for="br-rate">How common it really is (base rate)</label>
                 <span class="control-readout" id="br-val-rate">1.0%</span>
               </div>
               <input id="br-rate" type="range" min="0.1" max="40" step="0.1" value="1.0" />
@@ -193,11 +193,11 @@ export function mountBayes(root) {
             <div class="formula-grid">
               <div class="formula-item">
                 <code>A_agg = (1 - w_A) A_easy + w_A A_hard &lt; (1 - w_B) B_easy + w_B B_hard</code>
-                <p>Simpson's reversal arises when a confounder (regime or severity) drives both group assignment and outcomes.</p>
+                <p>Simpson's paradox happens when a hidden factor (calm or stressed market, mild or severe illness) affects both who gets which option and how well it goes.</p>
               </div>
               <div class="formula-item">
                 <code>P(H | +) &ne; 1 - P(+ | &not;H)</code>
-                <p>Confusing a low false-positive rate with high posterior certainty is the prosecutor's / base-rate fallacy.</p>
+                <p>"The test rarely gives false alarms" is not the same as "a positive result is almost surely right". Mixing them up is the base-rate (or prosecutor's) fallacy.</p>
               </div>
             </div>
           </div>
@@ -218,19 +218,19 @@ export function mountBayes(root) {
     $('by-prior').value = (b.prior * 100).toFixed(1);
     $('by-sens').value = (b.sensitivity * 100).toFixed(1);
     $('by-fpr').value = (b.fpr * 100).toFixed(1);
-    $('by-add').textContent = b.signals < 3 ? `Add independent signal (${b.signals}x)` : 'Max signals (3x), restart';
+    $('by-add').textContent = b.signals < 3 ? `Add another positive result (${b.signals} so far)` : 'Maximum 3 results, start again';
     $('by-hero-label').textContent =
-      b.signals === 1 ? 'Posterior probability P(H | E)' : `Posterior after ${b.signals} independent positive signals`;
+      b.signals === 1 ? 'Chance it is really true after a positive result (posterior)' : `Chance it is really true after ${b.signals} independent positive results`;
     $('by-posterior').textContent = `${(res.posterior * 100).toFixed(1)}%`;
     const preset = BAYESIAN_PRESETS[b.preset];
     $('by-summary').textContent = preset
       ? preset.summary
-      : 'Custom parameters: watch how base rate and false-positive rate govern certainty.';
+      : 'Your own numbers: notice how much the starting point and the false alarm rate decide the answer.';
     $('by-kpis').innerHTML = `
-      <div class="kpi-card"><p class="kpi-label">Prior P(H)</p><p class="kpi-value">${(res.prior * 100).toFixed(1)}%</p><p class="kpi-sub">Starting belief</p></div>
-      <div class="kpi-card"><p class="kpi-label">Bayes factor</p><p class="kpi-value">${res.bayesFactor.toFixed(1)}x</p><p class="kpi-sub">Likelihood ratio</p></div>
-      <div class="kpi-card"><p class="kpi-label">Belief lift</p><p class="kpi-value kpi-value--accent">${res.lift.toFixed(1)}x</p><p class="kpi-sub">Posterior / prior</p></div>
-      <div class="kpi-card"><p class="kpi-label">If negative P(H|&not;E)</p><p class="kpi-value">${(res.posteriorNegative * 100).toFixed(2)}%</p><p class="kpi-sub">Residual risk</p></div>
+      <div class="kpi-card"><p class="kpi-label">Starting belief (prior)</p><p class="kpi-value">${(res.prior * 100).toFixed(1)}%</p><p class="kpi-sub">Before any result</p></div>
+      <div class="kpi-card"><p class="kpi-label">Evidence strength (Bayes factor)</p><p class="kpi-value">${res.bayesFactor.toFixed(1)}x</p><p class="kpi-sub">How much likelier a positive is if true</p></div>
+      <div class="kpi-card"><p class="kpi-label">Belief lift</p><p class="kpi-value kpi-value--accent">${res.lift.toFixed(1)}x</p><p class="kpi-sub">Updated belief divided by starting belief</p></div>
+      <div class="kpi-card"><p class="kpi-label">If the result is negative</p><p class="kpi-value">${(res.posteriorNegative * 100).toFixed(2)}%</p><p class="kpi-sub">Chance it is still true</p></div>
     `;
     $('by-matrix').innerHTML = renderFrequencyMatrixSvg(res);
     $('by-split').innerHTML = renderPositiveSplitBar(res);

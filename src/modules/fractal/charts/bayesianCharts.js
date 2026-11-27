@@ -60,7 +60,7 @@ export function renderPositiveSplitBar(bayes) {
   return `
     <div style="margin-top:14px;">
       <div class="control-row" style="margin-bottom:6px;">
-        <span class="control-label">Among positive signals only</span>
+        <span class="control-label">Among everyone who tested positive</span>
         <span class="control-readout">${tpPct.toFixed(1)}% true / ${fpPct.toFixed(1)}% false alarm</span>
       </div>
       <div style="display:flex;height:18px;border-radius:6px;overflow:hidden;border:1px solid #e5e5e3;background:#fafaf9;">
@@ -68,10 +68,10 @@ export function renderPositiveSplitBar(bayes) {
         <div style="width:${fpPct.toFixed(2)}%;background:#bfdbfe;transition:width 180ms ease;" title="False Positives"></div>
       </div>
       <div class="legend-row" style="margin-top:8px;">
-        <span class="legend-item"><span class="swatch swatch--box" style="background:#1d4ed8;"></span>TP: ${tp.toFixed(1)}</span>
-        <span class="legend-item"><span class="swatch swatch--box" style="background:#bfdbfe;border:1px solid #60a5fa;"></span>FP: ${fp.toFixed(1)}</span>
-        <span class="legend-item"><span class="swatch swatch--box" style="background:#52525b;"></span>FN: ${bayes.counts.fn.toFixed(1)}</span>
-        <span class="legend-item"><span class="swatch swatch--box" style="background:#ecece9;border:1px solid #d4d4d0;"></span>TN: ${bayes.counts.tn.toFixed(1)}</span>
+        <span class="legend-item"><span class="swatch swatch--box" style="background:#1d4ed8;"></span>Real positives (TP): ${tp.toFixed(1)}</span>
+        <span class="legend-item"><span class="swatch swatch--box" style="background:#bfdbfe;border:1px solid #60a5fa;"></span>False alarms (FP): ${fp.toFixed(1)}</span>
+        <span class="legend-item"><span class="swatch swatch--box" style="background:#52525b;"></span>Missed (FN): ${bayes.counts.fn.toFixed(1)}</span>
+        <span class="legend-item"><span class="swatch swatch--box" style="background:#ecece9;border:1px solid #d4d4d0;"></span>Correct all-clear (TN): ${bayes.counts.tn.toFixed(1)}</span>
       </div>
     </div>
   `;
@@ -118,7 +118,7 @@ export function renderBayesianCurveSvg(bayes) {
       <line x1="${cx.toFixed(1)}" y1="${yOf(0)}" x2="${cx.toFixed(1)}" y2="${cy.toFixed(1)}" stroke="#1d4ed8" stroke-width="1" stroke-dasharray="2 2" />
       <line x1="${pad.left}" y1="${cy.toFixed(1)}" x2="${cx.toFixed(1)}" y2="${cy.toFixed(1)}" stroke="#1d4ed8" stroke-width="1" stroke-dasharray="2 2" />
       <circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="5.5" fill="#1d4ed8" stroke="#ffffff" stroke-width="2" />
-      <text x="${pad.left + plotW / 2}" y="${height - 1}" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#575754">Prior probability P(H)</text>
+      <text x="${pad.left + plotW / 2}" y="${height - 1}" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#575754">How common it is (prior)</text>
     </svg>
   `;
 }

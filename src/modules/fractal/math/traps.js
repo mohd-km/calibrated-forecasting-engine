@@ -1,7 +1,7 @@
 export const SIMPSON_SCENARIOS = {
   quant: {
     id: 'quant',
-    label: 'Quant strategy alpha',
+    label: 'Trading models',
     actorA: 'Model A',
     actorB: 'Model B',
     metricLabel: 'Win rate',

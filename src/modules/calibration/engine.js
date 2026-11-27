@@ -291,7 +291,7 @@ function renderMasthead() {
   const { meta, forwardLedger } = state.data;
   const feedEl = $('feed-status');
   if (meta.dataMode === 'live') {
-    feedEl.textContent = `${state.data.backtest.resolvedCount} resolved · ${meta.liveMarketsCount} live`;
+    feedEl.textContent = `${state.data.backtest.resolvedCount} finished · ${meta.liveMarketsCount} open`;
     feedEl.classList.remove('fallback');
   } else {
     feedEl.textContent = 'Offline snapshot';
@@ -347,18 +347,18 @@ function renderKControls(sweep) {
   const regimeEl = $('k-regime-tag');
   regimeEl.classList.remove('shrink', 'crowd');
   if (Math.abs(state.k - 1.0) < 0.005) {
-    regimeEl.textContent = 'Crowd Baseline';
+    regimeEl.textContent = 'Raw crowd';
     regimeEl.classList.add('crowd');
   } else if (state.k < 1.0) {
-    regimeEl.textContent = 'Shrinkage';
+    regimeEl.textContent = 'More cautious';
     regimeEl.classList.add('shrink');
   } else {
-    regimeEl.textContent = 'Extremization';
+    regimeEl.textContent = 'Bolder';
   }
 
   const optBtn = $('btn-k-optimal');
   if (optBtn && sweep?.best) {
-    optBtn.textContent = `Best k* (${sweep.best.k.toFixed(2)})`;
+    optBtn.textContent = `Best fit k* (${sweep.best.k.toFixed(2)})`;
     optBtn.dataset.kVal = sweep.best.k.toFixed(2);
   }
 
@@ -372,7 +372,8 @@ function renderScoreboard(ev, sweep) {
   const { backtest } = state.data;
 
   $('scoreboard-context').textContent =
-    `${ev.label} · n = ${ev.resolvedCount} resolved Manifold markets (${backtest.window}), priced T−${backtest.horizonDays}d.`;
+    `${ev.label}: ${ev.resolvedCount} finished Manifold questions (${backtest.window}), each priced ${backtest.horizonDays} days before it closed. ` +
+    `The raw crowd's average error (Brier) was ${ev.marketBrierScore.toFixed(3)}, where 0 is perfect and 0.25 is coin-flip guessing.`;
 
   const brierDiff = ev.brierScore - ev.marketBrierScore;
   const logDiff = ev.logLoss - ev.marketLogLoss;
@@ -448,8 +449,8 @@ function renderCalibrationCurve(ev) {
   });
 
   parts.push(`<rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="none" stroke="#d4d4d0" stroke-width="1" />`);
-  parts.push(`<text x="${pad.left + plotW / 2}" y="${H - 10}" text-anchor="middle" fill="#555555" font-family="Inter" font-size="12.5">Predicted Probability</text>`);
-  parts.push(`<text x="16" y="${pad.top + plotH / 2}" text-anchor="middle" fill="#555555" font-family="Inter" font-size="12.5" transform="rotate(-90 16 ${pad.top + plotH / 2})">Empirical Frequency</text>`);
+  parts.push(`<text x="${pad.left + plotW / 2}" y="${H - 10}" text-anchor="middle" fill="#555555" font-family="Inter" font-size="12.5">Forecast probability</text>`);
+  parts.push(`<text x="16" y="${pad.top + plotH / 2}" text-anchor="middle" fill="#555555" font-family="Inter" font-size="12.5" transform="rotate(-90 16 ${pad.top + plotH / 2})">How often it happened</text>`);
 
   // Perfect calibration diagonal
   parts.push(`<line x1="${x(0)}" y1="${y(0)}" x2="${x(1)}" y2="${y(1)}" stroke="#a3a39e" stroke-width="1.4" stroke-dasharray="4 4" />`);
@@ -494,11 +495,11 @@ function renderCalibrationCurve(ev) {
     const mktErr =
       d.marketEmpirical !== null ? ((d.marketEmpirical - d.marketPredicted) * 100).toFixed(1) : null;
     inspector.innerHTML = `
-      <span>Bin <strong>${d.bin}</strong> ${d.isTail ? '<span class="ochre">[Tail]</span>' : ''}</span>
-      <span>Rule Pred <strong>${fmtPct(d.predicted)}</strong></span>
-      <span>Rule Emp <strong class="accent">${fmtPct(d.empirical)}</strong>${err !== null ? ` (${Number(err) >= 0 ? '+' : ''}${err} pp)` : ''}</span>
-      <span>Crowd Emp <strong>${fmtPct(d.marketEmpirical)}</strong>${mktErr !== null ? ` (${Number(mktErr) >= 0 ? '+' : ''}${mktErr} pp)` : ''}</span>
-      <span>n = <strong>${d.n}</strong></span>
+      <span>Bucket <strong>${d.bin}</strong> ${d.isTail ? '<span class="ochre">[confident]</span>' : ''}</span>
+      <span>Forecast <strong>${fmtPct(d.predicted)}</strong></span>
+      <span>Really happened <strong class="accent">${fmtPct(d.empirical)}</strong>${err !== null ? ` (${Number(err) >= 0 ? '+' : ''}${err} pp)` : ''}</span>
+      <span>Raw crowd: happened <strong>${fmtPct(d.marketEmpirical)}</strong>${mktErr !== null ? ` (${Number(mktErr) >= 0 ? '+' : ''}${mktErr} pp)` : ''}</span>
+      <span>Questions <strong>${d.n}</strong></span>
     `;
   };
 
@@ -554,7 +555,7 @@ function renderSweepChart(sweep, currentEv) {
   });
 
   parts.push(`<rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="none" stroke="#d4d4d0" stroke-width="1" />`);
-  parts.push(`<text x="${pad.left + plotW / 2}" y="${H - 4}" text-anchor="middle" fill="#555555" font-family="Inter" font-size="11.5">Calibration Parameter k</text>`);
+  parts.push(`<text x="${pad.left + plotW / 2}" y="${H - 4}" text-anchor="middle" fill="#555555" font-family="Inter" font-size="11.5">Boldness dial k</text>`);
 
   // Crowd k=1.0 reference line
   const x1 = x(1.0);
@@ -592,12 +593,12 @@ function renderDomainBreakdown() {
       const tailStr = r.tailBrierScore !== null ? r.tailBrierScore.toFixed(4) : '--';
       return `
       <tr data-domain-row="${r.key}" class="${state.domain === r.key ? 'active-row' : ''}" tabindex="0">
-        <td class="domain-row-name" data-label="Domain">${r.label}</td>
-        <td class="num" data-label="n">${r.resolvedCount}</td>
-        <td class="num" data-label="Brier">${r.brierScore.toFixed(4)}</td>
-        <td class="num" data-label="Log-Loss">${r.logLoss.toFixed(4)}</td>
-        <td class="num ochre" data-label="Tail Brier">${tailStr}</td>
-        <td class="num ${skillCls}" data-label="Skill">${fmtSignedPct(r.brierSkillPct, 1)}</td>
+        <td class="domain-row-name" data-label="Topic">${r.label}</td>
+        <td class="num" data-label="Questions">${r.resolvedCount}</td>
+        <td class="num" data-label="Error (Brier)">${r.brierScore.toFixed(4)}</td>
+        <td class="num" data-label="Surprise (log-loss)">${r.logLoss.toFixed(4)}</td>
+        <td class="num ochre" data-label="Confident-call error">${tailStr}</td>
+        <td class="num ${skillCls}" data-label="Beat crowd by">${fmtSignedPct(r.brierSkillPct, 1)}</td>
       </tr>`;
     })
     .join('');
@@ -619,7 +620,7 @@ function renderMarketsTable() {
   const list = getFilteredMarkets();
 
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--ink-muted);padding:24px;">No markets match the current filter.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--ink-muted);padding:24px;">No questions match the current filter.</td></tr>`;
     return;
   }
 
@@ -633,7 +634,7 @@ function renderMarketsTable() {
       const edgeCls = m.edge >= 0 ? 'edge-pos' : 'edge-neg';
       return `
         <tr data-market-id="${m.id}" class="${selected}">
-          <td class="q-cell" data-label="Contract">
+          <td class="q-cell" data-label="Question">
             <a
               class="q-title-link"
               href="${escapeHtml(m.url)}"
@@ -642,10 +643,10 @@ function renderMarketsTable() {
               title="Open market on Manifold Markets"
             >${escapeHtml(m.question)}</a>
             <div class="q-meta">
-              <span>Liq ${fmtCompact(m.liquidity)}</span>
+              <span>${fmtCompact(m.liquidity)} bet</span>
               <span>&middot;</span>
               <span>Closes ${m.closeDate}</span>
-              ${m.tailEvent ? '<span class="tail-pill">Tail</span>' : ''}
+              ${m.tailEvent ? '<span class="tail-pill">Confident</span>' : ''}
               <a
                 class="q-ext-link"
                 href="${escapeHtml(m.url)}"
@@ -654,10 +655,10 @@ function renderMarketsTable() {
               >Manifold &rarr;</a>
             </div>
           </td>
-          <td class="domain-cell" data-label="Domain"><span class="domain-pill">${m.domain}</span></td>
-          <td class="num mono-cell" data-label="Market">${fmtPct(m.marketProb)}</td>
-          <td class="num mono-cell" data-label="Dom. YES" style="color:var(--ink-secondary)">${fmtPct(m.domainBaseRate)}</td>
-          <td class="num mono-cell accent" data-label="Rule" style="font-weight:600">${fmtPct(m.modelProb)}</td>
+          <td class="domain-cell" data-label="Topic"><span class="domain-pill">${m.domain}</span></td>
+          <td class="num mono-cell" data-label="Crowd">${fmtPct(m.marketProb)}</td>
+          <td class="num mono-cell" data-label="Topic YES rate" style="color:var(--ink-secondary)">${fmtPct(m.domainBaseRate)}</td>
+          <td class="num mono-cell accent" data-label="After dial" style="font-weight:600">${fmtPct(m.modelProb)}</td>
           <td class="num mono-cell" data-label="Shift"><span class="edge-badge ${edgeCls}">${fmtSignedPP(m.edge)}</span></td>
         </tr>
       `;
@@ -687,12 +688,12 @@ function renderTracePanel() {
   $('trace-domain-badge').textContent = m.domain;
   $('trace-tail-badge').classList.toggle('hidden', !m.tailEvent);
   $('trace-question').textContent = m.question;
-  $('trace-liquidity').textContent = `Liquidity: ${fmtCompact(m.liquidity)}`;
+  $('trace-liquidity').textContent = `Money bet: ${fmtCompact(m.liquidity)}`;
   $('trace-traders').textContent = `Traders: ${m.traderCount}`;
   $('trace-close').textContent = `Closes: ${m.closeDate}`;
   $('trace-link').href = m.url;
 
-  $('trace-rule-label').textContent = `Rule (k=${state.k.toFixed(2)})`;
+  $('trace-rule-label').textContent = `After dial (k=${state.k.toFixed(2)})`;
   $('trace-base').textContent = fmtPct(m.domainBaseRate);
   $('trace-market').textContent = fmtPct(m.marketProb);
   $('trace-model').textContent = fmtPct(m.modelProb);
@@ -709,7 +710,9 @@ function renderTracePanel() {
   const loMod = state.k * loMkt;
   const dir = m.edge >= 0 ? 'above' : 'below';
   $('trace-rule-comp').textContent =
-    `Market p = ${fmtPct(m.marketProb)} -> logit ${loMkt >= 0 ? '+' : ''}${loMkt.toFixed(3)} x k=${state.k.toFixed(2)} = ${loMod >= 0 ? '+' : ''}${loMod.toFixed(3)} -> sigmoid = ${fmtPct(m.modelProb)} (${Math.abs(m.edge * 100).toFixed(1)} pp ${dir} crowd).`;
+    `Crowd says ${fmtPct(m.marketProb)}. On the log-odds scale (where 50% is 0) that is ${loMkt >= 0 ? '+' : ''}${loMkt.toFixed(3)}. ` +
+    `Multiply by k = ${state.k.toFixed(2)} to get ${loMod >= 0 ? '+' : ''}${loMod.toFixed(3)}, then convert back: ${fmtPct(m.modelProb)}, ` +
+    `which is ${Math.abs(m.edge * 100).toFixed(1)} percentage points ${dir} the crowd.`;
 
   $('trace-base-ctx').textContent = m.trace.baseRateContext;
   $('trace-template').textContent = m.trace.qualitativeTemplate;
@@ -723,7 +726,7 @@ function populateSandboxSelect() {
   select.innerHTML = state.data.markets
     .map(
       (m) =>
-        `<option value="${m.id}">[${m.domain}] ${escapeHtml(m.question)} (Mkt ${fmtPct(m.marketProb, 0)})</option>`
+        `<option value="${m.id}">[${m.domain}] ${escapeHtml(m.question)} (crowd ${fmtPct(m.marketProb, 0)})</option>`
     )
     .join('');
 
@@ -749,7 +752,7 @@ function renderSandbox() {
   const pMkt = clampProb(m.marketProb);
   const pMod = clampProb(m.modelProb);
 
-  $('sb-rule-label').textContent = `Rule (k=${state.k.toFixed(2)})`;
+  $('sb-rule-label').textContent = `After dial, p* (k=${state.k.toFixed(2)})`;
   $('sb-mkt-prob').textContent = fmtPct(pMkt);
   $('sb-mod-prob').textContent = fmtPct(pMod);
   $('sb-base-prob').textContent = fmtPct(m.domainBaseRate);
@@ -768,37 +771,37 @@ function renderSandbox() {
   const tbody = $('sandbox-score-body');
   tbody.innerHTML = `
     <tr>
-      <td>If YES: Brier</td>
+      <td>If YES: error (Brier)</td>
       <td class="num">${brierYes(pUser).toFixed(3)}</td>
       <td class="num accent">${brierYes(pMod).toFixed(3)}</td>
       <td class="num">${brierYes(pMkt).toFixed(3)}</td>
     </tr>
     <tr>
-      <td>If NO: Brier</td>
+      <td>If NO: error (Brier)</td>
       <td class="num">${brierNo(pUser).toFixed(3)}</td>
       <td class="num accent">${brierNo(pMod).toFixed(3)}</td>
       <td class="num">${brierNo(pMkt).toFixed(3)}</td>
     </tr>
     <tr>
-      <td>If YES: Log-Loss</td>
+      <td>If YES: surprise (log-loss)</td>
       <td class="num">${logLossYes(pUser).toFixed(3)}</td>
       <td class="num accent">${logLossYes(pMod).toFixed(3)}</td>
       <td class="num">${logLossYes(pMkt).toFixed(3)}</td>
     </tr>
     <tr>
-      <td>If NO: Log-Loss</td>
+      <td>If NO: surprise (log-loss)</td>
       <td class="num">${logLossNo(pUser).toFixed(3)}</td>
       <td class="num accent">${logLossNo(pMod).toFixed(3)}</td>
       <td class="num">${logLossNo(pMkt).toFixed(3)}</td>
     </tr>
     <tr class="summary-row">
-      <td>Expected Brier (p*)</td>
+      <td>Average error if p* is right</td>
       <td class="num">${expBUser.toFixed(4)}</td>
       <td class="num accent">${expBMod.toFixed(4)}</td>
       <td class="num">${expBMkt.toFixed(4)}</td>
     </tr>
     <tr class="summary-row">
-      <td>Expected Log-Loss (p*)</td>
+      <td>Average surprise if p* is right</td>
       <td class="num">${expLLUser.toFixed(4)}</td>
       <td class="num accent">${expLLMod.toFixed(4)}</td>
       <td class="num">${expLLMkt.toFixed(4)}</td>
@@ -808,21 +811,21 @@ function renderSandbox() {
   $('sb-exp-brier').textContent = expBUser.toFixed(4);
   $('sb-exp-brier-diff').textContent =
     brierExcess < 0.0005
-      ? 'Matches Rule p* expectation'
-      : `+${brierExcess.toFixed(4)} excess Brier vs. p*`;
+      ? 'As low as it can be: you match p*'
+      : `${brierExcess.toFixed(4)} more error than simply saying p*`;
   $('sb-kl-div').textContent = `${kl.toFixed(4)} nats`;
 
   const verdict = $('sandbox-verdict');
   const dist = Math.abs(pUser - pMod);
   if (kl < 0.01) {
     verdict.className = 'verdict-banner good';
-    verdict.textContent = `Aligned with p*: ${fmtPct(pUser, 0)} sits within ${(dist * 100).toFixed(1)} pp, keeping excess loss near zero.`;
+    verdict.textContent = `Close to p*: ${fmtPct(pUser, 0)} is within ${(dist * 100).toFixed(1)} percentage points, so the extra penalty is near zero.`;
   } else if (kl < 0.12) {
     verdict.className = 'verdict-banner warn';
-    verdict.textContent = `Moderate divergence (${(dist * 100).toFixed(1)} pp): +${kl.toFixed(3)} nats expected Log-Loss penalty.`;
+    verdict.textContent = `Some disagreement (${(dist * 100).toFixed(1)} percentage points from p*): on average you pay ${kl.toFixed(3)} extra nats of surprise penalty.`;
   } else {
     verdict.className = 'verdict-banner danger';
-    verdict.textContent = `High overconfidence risk: a contrary outcome costs ${Math.max(logLossYes(pUser), logLossNo(pUser)).toFixed(2)} nats (+${kl.toFixed(3)} expected KL).`;
+    verdict.textContent = `Overconfident: if the answer goes against you, the surprise penalty is ${Math.max(logLossYes(pUser), logLossNo(pUser)).toFixed(2)} nats (on average ${kl.toFixed(3)} extra).`;
   }
 
   renderSandboxSvg(pUser, pMod, pMkt);
@@ -855,8 +858,8 @@ function renderSandboxSvg(pUser, pMod, pMkt) {
   });
 
   parts.push(`<rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="none" stroke="#d4d4d0" stroke-width="1" />`);
-  parts.push(`<text x="${pad.left + plotW / 2}" y="${H - 10}" text-anchor="middle" fill="#555555" font-family="Inter" font-size="12">Forecast Probability</text>`);
-  parts.push(`<text x="14" y="${pad.top + plotH / 2}" text-anchor="middle" fill="#555555" font-family="Inter" font-size="12" transform="rotate(-90 14 ${pad.top + plotH / 2})">Log-Loss (nats)</text>`);
+  parts.push(`<text x="${pad.left + plotW / 2}" y="${H - 10}" text-anchor="middle" fill="#555555" font-family="Inter" font-size="12">Your forecast</text>`);
+  parts.push(`<text x="14" y="${pad.top + plotH / 2}" text-anchor="middle" fill="#555555" font-family="Inter" font-size="12" transform="rotate(-90 14 ${pad.top + plotH / 2})">Penalty (log-loss, nats)</text>`);
 
   const yesPts = [];
   const noPts = [];
@@ -872,8 +875,8 @@ function renderSandboxSvg(pUser, pMod, pMkt) {
   parts.push(`<polyline points="${noPts.join(' ')}" fill="none" stroke="#b91c1c" stroke-width="1.5" opacity="0.55" stroke-dasharray="4 3" />`);
   parts.push(`<polyline points="${expPts.join(' ')}" fill="none" stroke="#1d4ed8" stroke-width="2.5" />`);
 
-  parts.push(`<text x="${x(0.11)}" y="${pad.top + 16}" fill="#15803d" font-family="JetBrains Mono" font-size="10.5">LOSS IF YES</text>`);
-  parts.push(`<text x="${x(0.89)}" y="${pad.top + 16}" text-anchor="end" fill="#b91c1c" font-family="JetBrains Mono" font-size="10.5">LOSS IF NO</text>`);
+  parts.push(`<text x="${x(0.11)}" y="${pad.top + 16}" fill="#15803d" font-family="JetBrains Mono" font-size="10.5">PENALTY IF YES</text>`);
+  parts.push(`<text x="${x(0.89)}" y="${pad.top + 16}" text-anchor="end" fill="#b91c1c" font-family="JetBrains Mono" font-size="10.5">PENALTY IF NO</text>`);
 
   const modExp = expectedLogLoss(pMod, pMod);
   parts.push(`<line x1="${x(pMod).toFixed(1)}" y1="${pad.top}" x2="${x(pMod).toFixed(1)}" y2="${H - pad.bottom}" stroke="#1d4ed8" stroke-width="1" stroke-dasharray="2 3" opacity="0.55" />`);
@@ -907,21 +910,21 @@ function renderLedger() {
   const resolved = all.filter((e) => e.status === 'resolved');
   const open = all.filter((e) => e.status === 'open');
   $('tab-ledger-count').textContent = String(L.entries.length);
-  note.textContent = `Append-only since ${L.startDateLabel}: each contract is logged once with the crowd price and the pre-registered rule (${L.ruleFormula}); entries are never edited, only scored when Manifold resolves them.`;
+  note.textContent = `No hindsight allowed. Since ${L.startDateLabel}, each open question is logged once with the crowd's price and the dial's forecast (${L.ruleFormula}). Entries are never edited, only scored once Manifold settles the answer.`;
 
   const avg = (arr, f) => (arr.length ? arr.reduce((a, e) => a + f(e), 0) / arr.length : null);
   const bRule = avg(resolved, (e) => (e.modelProbAtLog - (e.resolution === 'YES' ? 1 : 0)) ** 2);
   const bCrowd = avg(resolved, (e) => (e.marketProbAtLog - (e.resolution === 'YES' ? 1 : 0)) ** 2);
   const nextClose = open.map((e) => e.closeDate).filter(Boolean).sort()[0] || '--';
   $('ledger-kpis').innerHTML = `
-    <article class="kpi-card"><div class="kpi-top"><span class="kpi-title">Logged contracts</span></div>
+    <article class="kpi-card"><div class="kpi-top"><span class="kpi-title">Questions logged</span></div>
       <div class="kpi-value">${all.length}</div><div class="kpi-compare">${state.domain === 'ALL' ? 'All domains' : state.domain}</div></article>
-    <article class="kpi-card"><div class="kpi-top"><span class="kpi-title">Resolved / open</span></div>
+    <article class="kpi-card"><div class="kpi-top"><span class="kpi-title">Settled / still open</span></div>
       <div class="kpi-value">${resolved.length} / ${open.length}</div><div class="kpi-compare">Next close: <strong>${nextClose}</strong></div></article>
-    <article class="kpi-card"><div class="kpi-top"><span class="kpi-title">Forward Brier (rule)</span></div>
+    <article class="kpi-card"><div class="kpi-top"><span class="kpi-title">Dial's average error (Brier)</span></div>
       <div class="kpi-value">${bRule === null ? '--' : bRule.toFixed(4)}</div><div class="kpi-compare">Crowd: <strong>${bCrowd === null ? '--' : bCrowd.toFixed(4)}</strong></div></article>
     <article class="kpi-card"><div class="kpi-top"><span class="kpi-title">Track record</span></div>
-      <div class="kpi-value">${resolved.length ? fmtSignedPct((1 - bRule / Math.max(bCrowd, 1e-9)) * 100, 1) : 'pending'}</div><div class="kpi-compare">${resolved.length ? 'Brier skill vs crowd' : 'Scored only after resolution'}</div></article>
+      <div class="kpi-value">${resolved.length ? fmtSignedPct((1 - bRule / Math.max(bCrowd, 1e-9)) * 100, 1) : 'pending'}</div><div class="kpi-compare">${resolved.length ? 'Better than the crowd by (Brier skill)' : 'Scored only once answers are known'}</div></article>
   `;
 
   const rows = all.filter((e) => state.ledgerFilter === 'all' || e.status === state.ledgerFilter);
@@ -934,7 +937,7 @@ function renderLedger() {
       const y = e.resolution === 'YES' ? 1 : 0;
       const scored = e.status === 'resolved';
       const status = scored
-        ? `<span class="status-chip resolved">Resolved ${escapeHtml(e.resolution)}</span>`
+        ? `<span class="status-chip resolved">Settled ${escapeHtml(e.resolution)}</span>`
         : e.status === 'void'
           ? `<span class="status-chip">Void</span>`
           : `<span class="status-chip open">Open · closes ${escapeHtml(e.closeDate || '--')}</span>`;
@@ -943,15 +946,15 @@ function renderLedger() {
         : '<span style="color:var(--ink-muted)">pending</span>';
       return `
         <tr>
-          <td class="q-cell" data-label="Contract">
+          <td class="q-cell" data-label="Question">
             <a class="q-title-link" href="${escapeHtml(e.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(e.question)}</a>
             <div class="q-meta"><span class="domain-pill">${escapeHtml(e.domain)}</span></div>
           </td>
           <td class="mono-cell" data-label="Logged">${escapeHtml(String(e.loggedAt).slice(0, 10))}</td>
           <td class="num mono-cell" data-label="Crowd at log">${fmtPct(e.marketProbAtLog)}</td>
-          <td class="num mono-cell accent" data-label="Rule at log" style="font-weight:600">${fmtPct(e.modelProbAtLog)}</td>
+          <td class="num mono-cell accent" data-label="Dial at log" style="font-weight:600">${fmtPct(e.modelProbAtLog)}</td>
           <td data-label="Status">${status}</td>
-          <td class="num mono-cell" data-label="Brier rule / crowd">${briers}</td>
+          <td class="num mono-cell" data-label="Error: dial / crowd">${briers}</td>
         </tr>`;
     })
     .join('');

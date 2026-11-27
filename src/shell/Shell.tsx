@@ -1,5 +1,6 @@
 import React, { Suspense, useEffect, useState } from 'react';
 
+export type Story = { problem: string; how: string; tryThis: string };
 export type Provenance = { kind: 'real' | 'model' | 'synthetic'; label: string };
 export type TabDef = {
   id: string;
@@ -9,6 +10,7 @@ export type TabDef = {
   scope: string; // module folder name, wrapper gets class m-<scope>
   provenance: Provenance[];
   note?: string;
+  story?: Story;
   load: () => Promise<{ default: React.ComponentType }>;
   component?: React.ComponentType; // statically bundled default tab: paints with the first JS pass
 };
@@ -120,6 +122,15 @@ export function Shell({ config }: { config: ShellConfig }) {
           const C = lazyFor(t);
           return (
             <section key={t.id} className={`sh-panel m-${t.scope}`} hidden={t.id !== active} role="tabpanel" aria-label={t.label}>
+              {t.story ? (
+                <div className="sh-wrap">
+                  <div className="sh-story" aria-label="What this tab does">
+                    <p><span className="sh-story-k">The problem</span>{t.story.problem}</p>
+                    <p><span className="sh-story-k">How it works</span>{t.story.how}</p>
+                    <p className="sh-story-try"><span className="sh-story-k">Try this first</span>{t.story.tryThis}</p>
+                  </div>
+                </div>
+              ) : null}
               <Suspense fallback={<div className="sh-wrap" style={{ padding: 40, color: '#6b6b68' }}>Loading…</div>}>
                 <C />
               </Suspense>

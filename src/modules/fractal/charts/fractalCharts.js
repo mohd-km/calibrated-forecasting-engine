@@ -332,5 +332,5 @@ export function drawKdeChart(canvas, sim, logScale = false) {
   ctx.fillStyle = COLORS.cobalt;
   ctx.textAlign = 'right';
   ctx.textBaseline = 'top';
-  ctx.fillText('Shaded: >3 sigma tails', width - pad.right - 4, pad.top + 4);
+  ctx.fillText('Shaded: moves beyond 3 sigma', width - pad.right - 4, pad.top + 4);
 }

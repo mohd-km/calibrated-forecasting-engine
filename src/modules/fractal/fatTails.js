@@ -10,43 +10,43 @@ export function mountFatTails(root) {
   root.innerHTML = `
     <div class="lab-shell">
       <h2 class="mod-h2">Fat tails vs the bell curve</h2>
-      <p class="mod-lead">Same daily volatility, two worlds: a Mandelbrot α-stable process with Hurst memory and mean reversion against a matched Gaussian random walk. Paths are simulated with a fixed seed so every slider move is a like-for-like comparison.</p>
+      <p class="mod-lead">Same everyday wobble, two worlds. Blue is a fat-tailed market in the style of Benoit Mandelbrot (an α-stable process with trend memory). Dashed grey is a bell-curve market (a Gaussian random walk) tuned to the same typical daily move.</p>
       <div class="kpi-strip kpi-strip--4" id="ft-kpis" style="margin-bottom:18px;"></div>
 
       <div class="workspace-grid workspace-grid--sidebar">
         <aside class="card">
           <div class="card-head">
             <div>
-              <h3 class="card-title">Market parameters</h3>
-              <p class="card-desc">Dial from mild Gaussian walks to wild fractal markets.</p>
+              <h3 class="card-title">Market dials</h3>
+              <p class="card-desc">From a calm bell-curve market to a wild one with sudden crashes.</p>
             </div>
           </div>
 
           <div class="control-group">
             <div class="control-row">
-              <label class="control-label" for="ft-alpha">Mandelbrot tail exponent (&alpha;)</label>
+              <label class="control-label" for="ft-alpha">How wild the tails are (&alpha;)</label>
               <span class="control-readout" id="ft-val-alpha">1.65</span>
             </div>
             <input id="ft-alpha" type="range" min="1.30" max="2.00" step="0.05" value="1.65" />
-            <p class="control-hint">2.00 = Gaussian bell curve; lower &alpha; produces sudden crashes.</p>
+            <p class="control-hint">2.00 is a normal bell curve. Lower values make rare crashes and spikes far more common (fat tails).</p>
           </div>
 
           <div class="control-group">
             <div class="control-row">
-              <label class="control-label" for="ft-hurst">Hurst persistence (H)</label>
+              <label class="control-label" for="ft-hurst">Trend memory (Hurst H)</label>
               <span class="control-readout" id="ft-val-hurst">0.65</span>
             </div>
             <input id="ft-hurst" type="range" min="0.15" max="0.85" step="0.05" value="0.65" />
-            <p class="control-hint">&gt;0.50 trends smoothly; &lt;0.50 snaps back nervously.</p>
+            <p class="control-hint">Above 0.50, moves tend to keep going (trending). Below 0.50, they tend to snap back. 0.50 is a pure random walk.</p>
           </div>
 
           <div class="control-group">
             <div class="control-row">
-              <label class="control-label" for="ft-halflife">Mean-reversion half-life</label>
+              <label class="control-label" for="ft-halflife">Pull back to normal (half-life)</label>
               <span class="control-readout" id="ft-val-halflife">60d</span>
             </div>
             <input id="ft-halflife" type="range" min="5" max="250" step="5" value="60" />
-            <p class="control-hint">Time for drift to decay by half (250 = off).</p>
+            <p class="control-hint">Days for a price drift to fade by half. 250 turns the pull off.</p>
           </div>
 
           <div class="btn-row">
@@ -61,12 +61,12 @@ export function mountFatTails(root) {
           <div class="card">
             <div class="card-head">
               <div>
-                <h3 class="card-title">Simulated price paths (252 trading days)</h3>
-                <p class="card-desc">Fractal path against a matched Gaussian random walk. Hover to inspect.</p>
+                <h3 class="card-title">One simulated year of prices (252 trading days)</h3>
+                <p class="card-desc">Both start at 100. Hover or drag to compare any day.</p>
               </div>
               <div class="legend-row">
-                <span class="legend-item"><span class="swatch swatch--cobalt"></span>Fractal path</span>
-                <span class="legend-item"><span class="swatch swatch--dashed"></span>Gaussian walk</span>
+                <span class="legend-item"><span class="swatch swatch--cobalt"></span>Fat-tailed market</span>
+                <span class="legend-item"><span class="swatch swatch--dashed"></span>Bell-curve market</span>
               </div>
             </div>
             <div class="chart-box">
@@ -79,10 +79,10 @@ export function mountFatTails(root) {
             <div class="card">
               <div class="card-head">
                 <div>
-                  <h3 class="card-title">Return density vs Normal fit</h3>
-                  <p class="card-desc">Kernel density reveals fat tails missed by the bell curve.</p>
+                  <h3 class="card-title">How often each daily move happens</h3>
+                  <p class="card-desc">A smoothed histogram (KDE) of daily moves against the bell curve. Look at the far edges: fat tails sit above the bell curve there.</p>
                 </div>
-                <button type="button" class="chip-btn" id="ft-log">Log density</button>
+                <button type="button" class="chip-btn" id="ft-log">Zoom into the tails (log scale)</button>
               </div>
               <div class="chart-box">
                 <canvas id="ft-canvas-kde" class="chart-canvas chart-canvas--kde" aria-label="Kernel density estimate versus normal distribution fit"></canvas>
@@ -92,8 +92,8 @@ export function mountFatTails(root) {
             <div class="card">
               <div class="card-head">
                 <div>
-                  <h3 class="card-title">Tail-drawdown risk</h3>
-                  <p class="card-desc">Peak-to-trough underwater loss across the year.</p>
+                  <h3 class="card-title">How far below the peak (drawdown)</h3>
+                  <p class="card-desc">Each day, how far the price sits below its best level so far.</p>
                 </div>
               </div>
               <div class="chart-box">
@@ -105,24 +105,24 @@ export function mountFatTails(root) {
       </div>
 
       <details class="formula-box">
-        <summary>Model equations</summary>
+        <summary>The maths behind it</summary>
         <div class="formula-content">
           <div class="formula-grid">
             <div class="formula-item">
               <code>P(|r| &gt; x) &prop; x^(-&alpha;)</code>
-              <p>Symmetric &alpha;-stable innovations via Chambers-Mallows-Stuck sampling (Noah effect).</p>
+              <p>Big moves get rarer only slowly as they get bigger, so crashes stay plausible. Daily shocks are drawn from a symmetric &alpha;-stable distribution (Chambers-Mallows-Stuck sampling), which Mandelbrot called the Noah effect.</p>
             </div>
             <div class="formula-item">
               <code>D = 2 - H, &gamma;(k) = 0.5(|k+1|^(2H) - 2|k|^(2H) + |k-1|^(2H))</code>
-              <p>Exact fractional Gaussian noise Cholesky filter linking Hurst memory to fractal dimension (Joseph effect).</p>
+              <p>Trend memory: today's move is correlated with past moves through H, built exactly with fractional Gaussian noise (Cholesky filter). Mandelbrot called this the Joseph effect. D is the path's roughness.</p>
             </div>
             <div class="formula-item">
               <code>x_t = x_(t-1) - &theta; x_(t-1) + &sigma; &epsilon;_t, &theta; = 1 - 2^(-1/t_half)</code>
-              <p>Discrete Ornstein-Uhlenbeck mean reversion.</p>
+              <p>A gentle pull back toward normal each day (discrete Ornstein-Uhlenbeck mean reversion).</p>
             </div>
             <div class="formula-item">
               <code>f_hat(x) = (1 / (n h)) &Sigma; K((x - r_i) / h)</code>
-              <p>Gaussian kernel density estimate with robust Silverman bandwidth against the matched Normal PDF.</p>
+              <p>The smooth histogram: a small bell is placed on every daily move and they are added up (Gaussian kernel density, Silverman bandwidth), then compared with the matched bell curve.</p>
             </div>
           </div>
         </div>
@@ -146,27 +146,27 @@ export function mountFatTails(root) {
     $('ft-val-hurst').textContent = state.hurst.toFixed(2);
     $('ft-val-halflife').textContent = state.halfLife >= 250 ? 'Off' : `${state.halfLife}d`;
     $('ft-seed-label').textContent = `Seed ${state.seed}`;
-    const regime = state.hurst > 0.54 ? 'Trending' : state.hurst < 0.46 ? 'Anti-persistent' : 'Random walk';
+    const regime = state.hurst > 0.54 ? 'Trending' : state.hurst < 0.46 ? 'Snaps back' : 'Pure random walk';
     $('ft-kpis').innerHTML = `
       <div class="kpi-card">
-        <p class="kpi-label">Fractal dimension D</p>
+        <p class="kpi-label">Path roughness (fractal dimension D)</p>
         <p class="kpi-value kpi-value--accent">${sim.fractalDimension.toFixed(2)}</p>
-        <p class="kpi-sub">${regime} (D = 2 - H)</p>
+        <p class="kpi-sub">${regime}. D = 2 - H; 1.50 is a pure random walk</p>
       </div>
       <div class="kpi-card">
-        <p class="kpi-label">Max drawdown</p>
+        <p class="kpi-label">Worst fall from a peak (max drawdown)</p>
         <p class="kpi-value">${(sim.maxDdF * 100).toFixed(1)}%</p>
-        <p class="kpi-sub">Gaussian: ${(sim.maxDdG * 100).toFixed(1)}%</p>
+        <p class="kpi-sub">Bell-curve market: ${(sim.maxDdG * 100).toFixed(1)}%</p>
       </div>
       <div class="kpi-card">
-        <p class="kpi-label">&gt;3&sigma; shock days</p>
+        <p class="kpi-label">Shock days (moves beyond 3&sigma;)</p>
         <p class="kpi-value">${sim.statsF.tail3Sigma}</p>
-        <p class="kpi-sub">Gaussian: ${sim.statsG.tail3Sigma} days</p>
+        <p class="kpi-sub">Bell-curve market: ${sim.statsG.tail3Sigma}. A bell curve expects about 1 in 370 days</p>
       </div>
       <div class="kpi-card">
-        <p class="kpi-label">Excess kurtosis</p>
+        <p class="kpi-label">Tail heaviness (excess kurtosis)</p>
         <p class="kpi-value">${sim.statsF.excessKurtosis.toFixed(2)}</p>
-        <p class="kpi-sub">Gaussian path: ${sim.statsG.excessKurtosis.toFixed(2)}</p>
+        <p class="kpi-sub">About 0 for a bell curve; higher means more extreme days. Bell-curve market: ${sim.statsG.excessKurtosis.toFixed(2)}</p>
       </div>
     `;
     redraw();
@@ -222,7 +222,7 @@ export function mountFatTails(root) {
     }
     const idx = Math.max(0, Math.min(layout.n - 1, Math.round(frac * (layout.n - 1))));
     state.hoverIndex = idx;
-    tooltip.innerHTML = `Day ${idx}<br/>Fractal: ${sim.fractalPrices[idx].toFixed(2)}<br/>Gaussian: ${sim.gaussPrices[idx].toFixed(2)}<br/>DD: ${(sim.fractalDD[idx] * 100).toFixed(1)}%`;
+    tooltip.innerHTML = `Day ${idx}<br/>Fat-tailed: ${sim.fractalPrices[idx].toFixed(2)}<br/>Bell-curve: ${sim.gaussPrices[idx].toFixed(2)}<br/>Below peak: ${(sim.fractalDD[idx] * 100).toFixed(1)}%`;
     tooltip.classList.add('is-visible');
     drawPricePaths(priceCanvas, sim, idx);
   };
