@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './shell/shell.css';
 import { Shell, type ShellConfig } from './shell/Shell';
+import DefaultTab from './modules/calibration/Calibration';
 
 const config: ShellConfig = {
   pillar: 'quant & science',
@@ -13,6 +14,7 @@ const config: ShellConfig = {
     {
       id: 'calibration', label: 'Market calibration', sub: 'Manifold backtest · k · Brier · ledger', scope: 'calibration',
       provenance: [{ kind: 'real', label: 'Manifold Markets resolved markets' }, { kind: 'model', label: 'logistic calibration transform' }],
+      component: DefaultTab,
       load: () => import('./modules/calibration/Calibration'),
     },
     {
