@@ -3,7 +3,7 @@ export const TEMPLATE = `
       <div class="mod-head">
         <div>
           <h2 class="mod-title">Calibration lab</h2>
-          <p class="subtitle">Real, finished yes/no questions from <a href="https://manifold.markets" target="_blank" rel="noopener noreferrer">Manifold Markets</a>, using the crowd's price one week before each closed. Move the boldness dial <code>k</code> and every question is re-scored instantly.</p>
+          <p class="subtitle">Real, finished yes/no questions from <a href="https://manifold.markets" target="_blank" rel="noopener noreferrer">Manifold Markets</a>, scored at the crowd's price one week before each one closed. Move the boldness dial <code>k</code> and every question is re-scored at once.</p>
         </div>
         <span id="feed-status" class="feed-status">Loading dataset...</span>
       </div>
@@ -77,7 +77,7 @@ export const TEMPLATE = `
                   <span>1.50</span>
                   <span>2.00 (very bold)</span>
                 </div>
-                <p class="k-hint">Below 1 pulls every forecast toward 50% (more cautious). Above 1 pushes it toward 0% or 100% (bolder). Pushing outward is called extremising: averaging many people's guesses tends to make a crowd too timid, so a bolder version can sometimes score better. 1.15 was chosen before looking at results.</p>
+                <p class="k-hint">Below 1 pulls every forecast toward 50% (more cautious). Above 1 pushes it toward 0% or 100% (bolder), which is called extremising. Averaging many people's guesses tends to make a crowd too timid, so a bolder version sometimes scores better. 1.15 was fixed before looking at any results.</p>
               </div>
 
               <div class="k-presets" aria-label="Parameter k presets">
@@ -119,7 +119,7 @@ export const TEMPLATE = `
               </div>
               <div id="kpi-edge" class="kpi-value">--</div>
               <div class="kpi-compare">Best possible: <strong id="kpi-opt-k">--</strong></div>
-              <div class="kpi-hint">Positive means the dial beat the raw crowd; negative means it did worse.</div>
+              <div class="kpi-hint">Positive means the dial beat the raw crowd. Negative means it did worse.</div>
             </article>
 
             <article class="kpi-card kpi-card-tail">
@@ -230,14 +230,14 @@ export const TEMPLATE = `
                   <p>
                     Every <code>k</code> re-scores each finished question exactly from its price one week before close
                     and its real outcome; nothing is estimated. The best fit <code>k*</code> is found by trying every step of 0.01
-                    on this same history, so it flatters itself: treat it as a clue, not a promise.
+                    on this same history. Hence it flatters itself, and it is a clue about the future rather than a promise.
                   </p>
                 </div>
                 <div>
                   <h4>Data and honest reporting</h4>
                   <p>
                     Scores come from real finished Manifold yes/no questions, each priced exactly 7 days before it
-                    closed. When the dial does worse than the raw crowd, the negative skill is shown as is.
+                    closed. When the dial does worse than the raw crowd, the negative skill is shown as it is.
                   </p>
                   <p class="ledger-note">
                     <span id="forward-ledger-text">Forward ledger: loading...</span> &middot;
@@ -418,7 +418,7 @@ export const TEMPLATE = `
               <h3 id="sec-sandbox" class="lab-h3">Score your own guess</h3>
               <p class="section-note">
                 Pick an open question and slide your forecast. The table shows your penalty if the answer turns out YES or NO.
-                Here the dial's forecast, called p*, stands in for the true chance. Confident wrong answers cost far more than cautious ones.
+                Here the dial's forecast, called p*, stands in for the true chance. A confident wrong answer costs far more than a cautious one.
               </p>
             </div>
           </div>
@@ -471,7 +471,7 @@ export const TEMPLATE = `
 
               <div class="slider-block">
                 <div class="slider-header">
-                  <label for="sandbox-slider" class="field-label">Your Forecast</label>
+                  <label for="sandbox-slider" class="field-label">Your forecast</label>
                   <div class="prob-input-wrap">
                     <input
                       type="number"
@@ -526,13 +526,12 @@ export const TEMPLATE = `
           <details class="methodology-drawer">
             <summary>Why these scores punish overconfidence (formulas)</summary>
             <div class="drawer-body">
-              <p>In plain words: both scores are built so that your best long-run strategy is to say exactly what you believe. Exaggerating in either direction always costs you on average.</p>
+              <p>Both scores are built so that your best long-run move is to say exactly what you believe. Exaggerating in either direction costs you on average.</p>
               <p>
                 Both <strong>Brier Score</strong> <code>(p &minus; y)&sup2;</code> and <strong>Log-Loss</strong>
-                <code>&minus;[y ln(p) + (1 &minus; y) ln(1 &minus; p)]</code> reward honesty: your expected loss is
-                uniquely minimized when your reported probability equals the true event probability <code>p*</code>.
-                Log-loss diverges toward infinity as a confident forecast misses, with excess expected loss equal to the
-                extra penalty for disagreeing shown above.
+                <code>&minus;[y ln(p) + (1 &minus; y) ln(1 &minus; p)]</code> reward honesty. Your expected loss is lowest only when the probability you report equals the true chance <code>p*</code>.
+                Log-loss heads toward infinity as a confident forecast misses, and the extra expected loss is the
+                penalty for disagreeing shown above.
               </p>
             </div>
           </details>

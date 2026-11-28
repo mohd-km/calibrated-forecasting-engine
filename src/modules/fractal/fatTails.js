@@ -10,7 +10,7 @@ export function mountFatTails(root) {
   root.innerHTML = `
     <div class="lab-shell">
       <h2 class="mod-h2">Fat tails vs the bell curve</h2>
-      <p class="mod-lead">Same everyday wobble, two worlds. Blue is a fat-tailed market in the style of Benoit Mandelbrot (fat-tailed jumps plus trend memory). Dashed grey is a bell-curve market (a Gaussian random walk) tuned to the same typical daily move.</p>
+      <p class="mod-lead">Blue is a fat-tailed market in the style of Benoit Mandelbrot, with sudden jumps and some trend memory. Dashed grey is a bell-curve market (a Gaussian random walk) tuned to the same typical daily move. Same everyday wobble, very different worst days.</p>
       <div class="kpi-strip kpi-strip--4" id="ft-kpis" style="margin-bottom:18px;"></div>
 
       <div class="workspace-grid workspace-grid--sidebar">
@@ -110,7 +110,7 @@ export function mountFatTails(root) {
           <div class="formula-grid">
             <div class="formula-item">
               <code>P(|r| &gt; x) &prop; x^(-&alpha;)</code>
-              <p>Big moves get rarer only slowly as they get bigger, so crashes stay plausible. Daily shocks are drawn from a stable law with tail index &alpha; (2 is the bell curve, lower is wilder). Mandelbrot called these sudden jumps the Noah effect.</p>
+              <p>Big moves get rarer only slowly as they get bigger, so crashes stay possible. Daily shocks are drawn from a stable law with tail index &alpha; (2 is the bell curve, lower is wilder). Mandelbrot called these sudden jumps the Noah effect.</p>
             </div>
             <div class="formula-item">
               <code>D = 2 - H, &gamma;(k) = 0.5(|k+1|^(2H) - 2|k|^(2H) + |k-1|^(2H))</code>
@@ -122,7 +122,7 @@ export function mountFatTails(root) {
             </div>
             <div class="formula-item">
               <code>f_hat(x) = (1 / (n h)) &Sigma; K((x - r_i) / h)</code>
-              <p>The smooth histogram: a small bell is placed on every daily move and they are added up (Gaussian kernel density, Silverman bandwidth), then compared with the matched bell curve.</p>
+              <p>The smooth histogram places a small bell on every daily move and adds them up (Gaussian kernel density, Silverman bandwidth). That shape is then compared with the matched bell curve.</p>
             </div>
           </div>
         </div>

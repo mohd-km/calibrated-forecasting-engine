@@ -568,13 +568,12 @@ def build_live_market_record(market: dict, domain: str, domain_bench: dict, idx:
     )
 
     base_rate_context = (
-        f"In the {domain} resolved backtest sample (n = {domain_n} binary markets), "
-        f"the empirical YES resolution rate is {base_pct}%. Current contract depth is "
-        f"${liq:,.0f} liquidity and ${vol:,.0f} cumulative volume."
+        f"Of the {domain_n} finished {domain} questions in the backtest, {base_pct}% resolved YES. "
+        f"This question has ${liq:,.0f} of liquidity and ${vol:,.0f} traded so far."
     )
 
     qualitative_template = (
-        f"Illustrative domain checklist ({tpl['ref_class']} — template, not a bespoke thesis): "
+        f"Topic checklist for {tpl['ref_class']} (a general template, not a view on this question): "
         f"{tpl['checklist_note']}"
     )
 

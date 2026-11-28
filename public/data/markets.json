@@ -1659,8 +1659,8 @@
       "tailEvent": true,
       "trace": {
         "ruleComputation": "Market price p = 2.4% maps to log-odds -3.705. Applying the pre-registered extremization factor k = 1.15 gives log-odds -4.261, which maps back via sigmoid to 1.4% (1.0 pp below Manifold).",
-        "baseRateContext": "In the AI resolved backtest sample (n = 35 binary markets), the empirical YES resolution rate is 34.3%. Current contract depth is $5,100 liquidity and $89,968 cumulative volume.",
-        "qualitativeTemplate": "Illustrative domain checklist (frontier capability & deployment milestones \u2014 template, not a bespoke thesis): Check whether the contract hinges on a public benchmark readout, an official release changelog, or private evaluation splits.",
+        "baseRateContext": "Of the 35 finished AI questions in the backtest, 34.3% resolved YES. This question has $5,100 of liquidity and $89,968 traded so far.",
+        "qualitativeTemplate": "Topic checklist for frontier capability & deployment milestones (a general template, not a view on this question): Check whether the contract hinges on a public benchmark readout, an official release changelog, or private evaluation splits.",
         "falsifiers": [
           "Independent benchmark verification on held-out private splits",
           "Official release changelog or compute capital filing"
@@ -1684,8 +1684,8 @@
       "tailEvent": false,
       "trace": {
         "ruleComputation": "Market price p = 66.4% maps to log-odds +0.683. Applying the pre-registered extremization factor k = 1.15 gives log-odds +0.785, which maps back via sigmoid to 68.7% (2.2 pp above Manifold).",
-        "baseRateContext": "In the AI resolved backtest sample (n = 35 binary markets), the empirical YES resolution rate is 34.3%. Current contract depth is $10,010 liquidity and $47,967 cumulative volume.",
-        "qualitativeTemplate": "Illustrative domain checklist (frontier capability & deployment milestones \u2014 template, not a bespoke thesis): Check whether the contract hinges on a public benchmark readout, an official release changelog, or private evaluation splits.",
+        "baseRateContext": "Of the 35 finished AI questions in the backtest, 34.3% resolved YES. This question has $10,010 of liquidity and $47,967 traded so far.",
+        "qualitativeTemplate": "Topic checklist for frontier capability & deployment milestones (a general template, not a view on this question): Check whether the contract hinges on a public benchmark readout, an official release changelog, or private evaluation splits.",
         "falsifiers": [
           "Independent benchmark verification on held-out private splits",
           "Official release changelog or compute capital filing"
@@ -1709,8 +1709,8 @@
       "tailEvent": false,
       "trace": {
         "ruleComputation": "Market price p = 33.1% maps to log-odds -0.702. Applying the pre-registered extremization factor k = 1.15 gives log-odds -0.808, which maps back via sigmoid to 30.8% (2.3 pp below Manifold).",
-        "baseRateContext": "In the AI resolved backtest sample (n = 35 binary markets), the empirical YES resolution rate is 34.3%. Current contract depth is $10,000 liquidity and $24,369 cumulative volume.",
-        "qualitativeTemplate": "Illustrative domain checklist (frontier capability & deployment milestones \u2014 template, not a bespoke thesis): Check whether the contract hinges on a public benchmark readout, an official release changelog, or private evaluation splits.",
+        "baseRateContext": "Of the 35 finished AI questions in the backtest, 34.3% resolved YES. This question has $10,000 of liquidity and $24,369 traded so far.",
+        "qualitativeTemplate": "Topic checklist for frontier capability & deployment milestones (a general template, not a view on this question): Check whether the contract hinges on a public benchmark readout, an official release changelog, or private evaluation splits.",
         "falsifiers": [
           "Independent benchmark verification on held-out private splits",
           "Official release changelog or compute capital filing"
@@ -1734,8 +1734,8 @@
       "tailEvent": false,
       "trace": {
         "ruleComputation": "Market price p = 18.2% maps to log-odds -1.503. Applying the pre-registered extremization factor k = 1.15 gives log-odds -1.728, which maps back via sigmoid to 15.1% (3.1 pp below Manifold).",
-        "baseRateContext": "In the AI resolved backtest sample (n = 35 binary markets), the empirical YES resolution rate is 34.3%. Current contract depth is $10,000 liquidity and $23,191 cumulative volume.",
-        "qualitativeTemplate": "Illustrative domain checklist (frontier capability & deployment milestones \u2014 template, not a bespoke thesis): Check whether the contract hinges on a public benchmark readout, an official release changelog, or private evaluation splits.",
+        "baseRateContext": "Of the 35 finished AI questions in the backtest, 34.3% resolved YES. This question has $10,000 of liquidity and $23,191 traded so far.",
+        "qualitativeTemplate": "Topic checklist for frontier capability & deployment milestones (a general template, not a view on this question): Check whether the contract hinges on a public benchmark readout, an official release changelog, or private evaluation splits.",
         "falsifiers": [
           "Independent benchmark verification on held-out private splits",
           "Official release changelog or compute capital filing"
@@ -1759,8 +1759,8 @@
       "tailEvent": false,
       "trace": {
         "ruleComputation": "Market price p = 23.6% maps to log-odds -1.174. Applying the pre-registered extremization factor k = 1.15 gives log-odds -1.350, which maps back via sigmoid to 20.6% (3.0 pp below Manifold).",
-        "baseRateContext": "In the AI resolved backtest sample (n = 35 binary markets), the empirical YES resolution rate is 34.3%. Current contract depth is $6,000 liquidity and $23,452 cumulative volume.",
-        "qualitativeTemplate": "Illustrative domain checklist (frontier capability & deployment milestones \u2014 template, not a bespoke thesis): Check whether the contract hinges on a public benchmark readout, an official release changelog, or private evaluation splits.",
+        "baseRateContext": "Of the 35 finished AI questions in the backtest, 34.3% resolved YES. This question has $6,000 of liquidity and $23,452 traded so far.",
+        "qualitativeTemplate": "Topic checklist for frontier capability & deployment milestones (a general template, not a view on this question): Check whether the contract hinges on a public benchmark readout, an official release changelog, or private evaluation splits.",
         "falsifiers": [
           "Independent benchmark verification on held-out private splits",
           "Official release changelog or compute capital filing"
@@ -1784,8 +1784,8 @@
       "tailEvent": false,
       "trace": {
         "ruleComputation": "Market price p = 40.0% maps to log-odds -0.405. Applying the pre-registered extremization factor k = 1.15 gives log-odds -0.466, which maps back via sigmoid to 38.6% (1.5 pp below Manifold).",
-        "baseRateContext": "In the Energy resolved backtest sample (n = 33 binary markets), the empirical YES resolution rate is 0.0%. Current contract depth is $1,000 liquidity and $62,310 cumulative volume.",
-        "qualitativeTemplate": "Illustrative domain checklist (physical infrastructure, grid interconnection, and commodity cycles \u2014 template, not a bespoke thesis): Check permitting lead times, interconnection queue dates, and published EIA/IEA capacity telemetry.",
+        "baseRateContext": "Of the 33 finished Energy questions in the backtest, 0.0% resolved YES. This question has $1,000 of liquidity and $62,310 traded so far.",
+        "qualitativeTemplate": "Topic checklist for physical infrastructure, grid interconnection, and commodity cycles (a general template, not a view on this question): Check permitting lead times, interconnection queue dates, and published EIA/IEA capacity telemetry.",
         "falsifiers": [
           "EIA / IEA quarterly capacity and generation telemetry",
           "Binding EPC milestone, interconnection approval, or OPEC+ quota revision"
@@ -1809,8 +1809,8 @@
       "tailEvent": false,
       "trace": {
         "ruleComputation": "Market price p = 54.4% maps to log-odds +0.178. Applying the pre-registered extremization factor k = 1.15 gives log-odds +0.205, which maps back via sigmoid to 55.1% (0.7 pp above Manifold).",
-        "baseRateContext": "In the Energy resolved backtest sample (n = 33 binary markets), the empirical YES resolution rate is 0.0%. Current contract depth is $10,000 liquidity and $2,492 cumulative volume.",
-        "qualitativeTemplate": "Illustrative domain checklist (physical infrastructure, grid interconnection, and commodity cycles \u2014 template, not a bespoke thesis): Check permitting lead times, interconnection queue dates, and published EIA/IEA capacity telemetry.",
+        "baseRateContext": "Of the 33 finished Energy questions in the backtest, 0.0% resolved YES. This question has $10,000 of liquidity and $2,492 traded so far.",
+        "qualitativeTemplate": "Topic checklist for physical infrastructure, grid interconnection, and commodity cycles (a general template, not a view on this question): Check permitting lead times, interconnection queue dates, and published EIA/IEA capacity telemetry.",
         "falsifiers": [
           "EIA / IEA quarterly capacity and generation telemetry",
           "Binding EPC milestone, interconnection approval, or OPEC+ quota revision"
@@ -1834,8 +1834,8 @@
       "tailEvent": true,
       "trace": {
         "ruleComputation": "Market price p = 10.6% maps to log-odds -2.135. Applying the pre-registered extremization factor k = 1.15 gives log-odds -2.456, which maps back via sigmoid to 7.9% (2.7 pp below Manifold).",
-        "baseRateContext": "In the Energy resolved backtest sample (n = 33 binary markets), the empirical YES resolution rate is 0.0%. Current contract depth is $10,000 liquidity and $333 cumulative volume.",
-        "qualitativeTemplate": "Illustrative domain checklist (physical infrastructure, grid interconnection, and commodity cycles \u2014 template, not a bespoke thesis): Check permitting lead times, interconnection queue dates, and published EIA/IEA capacity telemetry.",
+        "baseRateContext": "Of the 33 finished Energy questions in the backtest, 0.0% resolved YES. This question has $10,000 of liquidity and $333 traded so far.",
+        "qualitativeTemplate": "Topic checklist for physical infrastructure, grid interconnection, and commodity cycles (a general template, not a view on this question): Check permitting lead times, interconnection queue dates, and published EIA/IEA capacity telemetry.",
         "falsifiers": [
           "EIA / IEA quarterly capacity and generation telemetry",
           "Binding EPC milestone, interconnection approval, or OPEC+ quota revision"
@@ -1859,8 +1859,8 @@
       "tailEvent": false,
       "trace": {
         "ruleComputation": "Market price p = 23.4% maps to log-odds -1.183. Applying the pre-registered extremization factor k = 1.15 gives log-odds -1.361, which maps back via sigmoid to 20.4% (3.0 pp below Manifold).",
-        "baseRateContext": "In the Energy resolved backtest sample (n = 33 binary markets), the empirical YES resolution rate is 0.0%. Current contract depth is $1,012 liquidity and $10,067 cumulative volume.",
-        "qualitativeTemplate": "Illustrative domain checklist (physical infrastructure, grid interconnection, and commodity cycles \u2014 template, not a bespoke thesis): Check permitting lead times, interconnection queue dates, and published EIA/IEA capacity telemetry.",
+        "baseRateContext": "Of the 33 finished Energy questions in the backtest, 0.0% resolved YES. This question has $1,012 of liquidity and $10,067 traded so far.",
+        "qualitativeTemplate": "Topic checklist for physical infrastructure, grid interconnection, and commodity cycles (a general template, not a view on this question): Check permitting lead times, interconnection queue dates, and published EIA/IEA capacity telemetry.",
         "falsifiers": [
           "EIA / IEA quarterly capacity and generation telemetry",
           "Binding EPC milestone, interconnection approval, or OPEC+ quota revision"
@@ -1884,8 +1884,8 @@
       "tailEvent": true,
       "trace": {
         "ruleComputation": "Market price p = 6.0% maps to log-odds -2.752. Applying the pre-registered extremization factor k = 1.15 gives log-odds -3.164, which maps back via sigmoid to 4.0% (1.9 pp below Manifold).",
-        "baseRateContext": "In the Energy resolved backtest sample (n = 33 binary markets), the empirical YES resolution rate is 0.0%. Current contract depth is $1,670 liquidity and $8,578 cumulative volume.",
-        "qualitativeTemplate": "Illustrative domain checklist (physical infrastructure, grid interconnection, and commodity cycles \u2014 template, not a bespoke thesis): Check permitting lead times, interconnection queue dates, and published EIA/IEA capacity telemetry.",
+        "baseRateContext": "Of the 33 finished Energy questions in the backtest, 0.0% resolved YES. This question has $1,670 of liquidity and $8,578 traded so far.",
+        "qualitativeTemplate": "Topic checklist for physical infrastructure, grid interconnection, and commodity cycles (a general template, not a view on this question): Check permitting lead times, interconnection queue dates, and published EIA/IEA capacity telemetry.",
         "falsifiers": [
           "EIA / IEA quarterly capacity and generation telemetry",
           "Binding EPC milestone, interconnection approval, or OPEC+ quota revision"
@@ -1909,8 +1909,8 @@
       "tailEvent": true,
       "trace": {
         "ruleComputation": "Market price p = 12.0% maps to log-odds -1.994. Applying the pre-registered extremization factor k = 1.15 gives log-odds -2.293, which maps back via sigmoid to 9.2% (2.8 pp below Manifold).",
-        "baseRateContext": "In the Biotech resolved backtest sample (n = 32 binary markets), the empirical YES resolution rate is 21.9%. Current contract depth is $5,100 liquidity and $28,906 cumulative volume.",
-        "qualitativeTemplate": "Illustrative domain checklist (clinical trial readouts and regulatory approvals \u2014 template, not a bespoke thesis): Check primary endpoint definitions on ClinicalTrials.gov and scheduled FDA PDUFA or advisory committee dates.",
+        "baseRateContext": "Of the 32 finished Biotech questions in the backtest, 21.9% resolved YES. This question has $5,100 of liquidity and $28,906 traded so far.",
+        "qualitativeTemplate": "Topic checklist for clinical trial readouts and regulatory approvals (a general template, not a view on this question): Check primary endpoint definitions on ClinicalTrials.gov and scheduled FDA PDUFA or advisory committee dates.",
         "falsifiers": [
           "Peer-reviewed primary endpoint readout on ClinicalTrials.gov",
           "FDA PDUFA action letter or advisory committee vote"
@@ -1934,8 +1934,8 @@
       "tailEvent": false,
       "trace": {
         "ruleComputation": "Market price p = 24.0% maps to log-odds -1.153. Applying the pre-registered extremization factor k = 1.15 gives log-odds -1.326, which maps back via sigmoid to 21.0% (3.0 pp below Manifold).",
-        "baseRateContext": "In the Biotech resolved backtest sample (n = 32 binary markets), the empirical YES resolution rate is 21.9%. Current contract depth is $10,000 liquidity and $8,682 cumulative volume.",
-        "qualitativeTemplate": "Illustrative domain checklist (clinical trial readouts and regulatory approvals \u2014 template, not a bespoke thesis): Check primary endpoint definitions on ClinicalTrials.gov and scheduled FDA PDUFA or advisory committee dates.",
+        "baseRateContext": "Of the 32 finished Biotech questions in the backtest, 21.9% resolved YES. This question has $10,000 of liquidity and $8,682 traded so far.",
+        "qualitativeTemplate": "Topic checklist for clinical trial readouts and regulatory approvals (a general template, not a view on this question): Check primary endpoint definitions on ClinicalTrials.gov and scheduled FDA PDUFA or advisory committee dates.",
         "falsifiers": [
           "Peer-reviewed primary endpoint readout on ClinicalTrials.gov",
           "FDA PDUFA action letter or advisory committee vote"
@@ -1959,8 +1959,8 @@
       "tailEvent": false,
       "trace": {
         "ruleComputation": "Market price p = 40.4% maps to log-odds -0.391. Applying the pre-registered extremization factor k = 1.15 gives log-odds -0.450, which maps back via sigmoid to 39.0% (1.4 pp below Manifold).",
-        "baseRateContext": "In the Biotech resolved backtest sample (n = 32 binary markets), the empirical YES resolution rate is 21.9%. Current contract depth is $3,465 liquidity and $10,425 cumulative volume.",
-        "qualitativeTemplate": "Illustrative domain checklist (clinical trial readouts and regulatory approvals \u2014 template, not a bespoke thesis): Check primary endpoint definitions on ClinicalTrials.gov and scheduled FDA PDUFA or advisory committee dates.",
+        "baseRateContext": "Of the 32 finished Biotech questions in the backtest, 21.9% resolved YES. This question has $3,465 of liquidity and $10,425 traded so far.",
+        "qualitativeTemplate": "Topic checklist for clinical trial readouts and regulatory approvals (a general template, not a view on this question): Check primary endpoint definitions on ClinicalTrials.gov and scheduled FDA PDUFA or advisory committee dates.",
         "falsifiers": [
           "Peer-reviewed primary endpoint readout on ClinicalTrials.gov",
           "FDA PDUFA action letter or advisory committee vote"
@@ -1984,8 +1984,8 @@
       "tailEvent": false,
       "trace": {
         "ruleComputation": "Market price p = 57.6% maps to log-odds +0.306. Applying the pre-registered extremization factor k = 1.15 gives log-odds +0.352, which maps back via sigmoid to 58.7% (1.1 pp above Manifold).",
-        "baseRateContext": "In the Biotech resolved backtest sample (n = 32 binary markets), the empirical YES resolution rate is 21.9%. Current contract depth is $6,000 liquidity and $575 cumulative volume.",
-        "qualitativeTemplate": "Illustrative domain checklist (clinical trial readouts and regulatory approvals \u2014 template, not a bespoke thesis): Check primary endpoint definitions on ClinicalTrials.gov and scheduled FDA PDUFA or advisory committee dates.",
+        "baseRateContext": "Of the 32 finished Biotech questions in the backtest, 21.9% resolved YES. This question has $6,000 of liquidity and $575 traded so far.",
+        "qualitativeTemplate": "Topic checklist for clinical trial readouts and regulatory approvals (a general template, not a view on this question): Check primary endpoint definitions on ClinicalTrials.gov and scheduled FDA PDUFA or advisory committee dates.",
         "falsifiers": [
           "Peer-reviewed primary endpoint readout on ClinicalTrials.gov",
           "FDA PDUFA action letter or advisory committee vote"
@@ -2009,8 +2009,8 @@
       "tailEvent": false,
       "trace": {
         "ruleComputation": "Market price p = 53.8% maps to log-odds +0.152. Applying the pre-registered extremization factor k = 1.15 gives log-odds +0.175, which maps back via sigmoid to 54.4% (0.6 pp above Manifold).",
-        "baseRateContext": "In the Biotech resolved backtest sample (n = 32 binary markets), the empirical YES resolution rate is 21.9%. Current contract depth is $1,000 liquidity and $7,427 cumulative volume.",
-        "qualitativeTemplate": "Illustrative domain checklist (clinical trial readouts and regulatory approvals \u2014 template, not a bespoke thesis): Check primary endpoint definitions on ClinicalTrials.gov and scheduled FDA PDUFA or advisory committee dates.",
+        "baseRateContext": "Of the 32 finished Biotech questions in the backtest, 21.9% resolved YES. This question has $1,000 of liquidity and $7,427 traded so far.",
+        "qualitativeTemplate": "Topic checklist for clinical trial readouts and regulatory approvals (a general template, not a view on this question): Check primary endpoint definitions on ClinicalTrials.gov and scheduled FDA PDUFA or advisory committee dates.",
         "falsifiers": [
           "Peer-reviewed primary endpoint readout on ClinicalTrials.gov",
           "FDA PDUFA action letter or advisory committee vote"
@@ -2034,8 +2034,8 @@
       "tailEvent": false,
       "trace": {
         "ruleComputation": "Market price p = 75.4% maps to log-odds +1.118. Applying the pre-registered extremization factor k = 1.15 gives log-odds +1.286, which maps back via sigmoid to 78.3% (3.0 pp above Manifold).",
-        "baseRateContext": "In the Macro resolved backtest sample (n = 32 binary markets), the empirical YES resolution rate is 9.4%. Current contract depth is $1,000 liquidity and $7,684 cumulative volume.",
-        "qualitativeTemplate": "Illustrative domain checklist (central bank policy cycles and official macro releases \u2014 template, not a bespoke thesis): Compare Manifold prices against OIS/SOFR futures, Fed Funds implied odds, and official release calendars.",
+        "baseRateContext": "Of the 32 finished Macro questions in the backtest, 9.4% resolved YES. This question has $1,000 of liquidity and $7,684 traded so far.",
+        "qualitativeTemplate": "Topic checklist for central bank policy cycles and official macro releases (a general template, not a view on this question): Compare Manifold prices against OIS/SOFR futures, Fed Funds implied odds, and official release calendars.",
         "falsifiers": [
           "Official BLS, BEA, or FOMC statement release",
           "Implied probability shift in 30-day Fed Funds or Treasury term structure"
@@ -2059,8 +2059,8 @@
       "tailEvent": true,
       "trace": {
         "ruleComputation": "Market price p = 3.4% maps to log-odds -3.341. Applying the pre-registered extremization factor k = 1.15 gives log-odds -3.842, which maps back via sigmoid to 2.1% (1.3 pp below Manifold).",
-        "baseRateContext": "In the Macro resolved backtest sample (n = 32 binary markets), the empirical YES resolution rate is 9.4%. Current contract depth is $1,000 liquidity and $5,750 cumulative volume.",
-        "qualitativeTemplate": "Illustrative domain checklist (central bank policy cycles and official macro releases \u2014 template, not a bespoke thesis): Compare Manifold prices against OIS/SOFR futures, Fed Funds implied odds, and official release calendars.",
+        "baseRateContext": "Of the 32 finished Macro questions in the backtest, 9.4% resolved YES. This question has $1,000 of liquidity and $5,750 traded so far.",
+        "qualitativeTemplate": "Topic checklist for central bank policy cycles and official macro releases (a general template, not a view on this question): Compare Manifold prices against OIS/SOFR futures, Fed Funds implied odds, and official release calendars.",
         "falsifiers": [
           "Official BLS, BEA, or FOMC statement release",
           "Implied probability shift in 30-day Fed Funds or Treasury term structure"
@@ -2084,8 +2084,8 @@
       "tailEvent": true,
       "trace": {
         "ruleComputation": "Market price p = 6.5% maps to log-odds -2.665. Applying the pre-registered extremization factor k = 1.15 gives log-odds -3.064, which maps back via sigmoid to 4.5% (2.1 pp below Manifold).",
-        "baseRateContext": "In the Macro resolved backtest sample (n = 32 binary markets), the empirical YES resolution rate is 9.4%. Current contract depth is $1,000 liquidity and $4,040 cumulative volume.",
-        "qualitativeTemplate": "Illustrative domain checklist (central bank policy cycles and official macro releases \u2014 template, not a bespoke thesis): Compare Manifold prices against OIS/SOFR futures, Fed Funds implied odds, and official release calendars.",
+        "baseRateContext": "Of the 32 finished Macro questions in the backtest, 9.4% resolved YES. This question has $1,000 of liquidity and $4,040 traded so far.",
+        "qualitativeTemplate": "Topic checklist for central bank policy cycles and official macro releases (a general template, not a view on this question): Compare Manifold prices against OIS/SOFR futures, Fed Funds implied odds, and official release calendars.",
         "falsifiers": [
           "Official BLS, BEA, or FOMC statement release",
           "Implied probability shift in 30-day Fed Funds or Treasury term structure"
@@ -2109,8 +2109,8 @@
       "tailEvent": false,
       "trace": {
         "ruleComputation": "Market price p = 22.6% maps to log-odds -1.232. Applying the pre-registered extremization factor k = 1.15 gives log-odds -1.416, which maps back via sigmoid to 19.5% (3.1 pp below Manifold).",
-        "baseRateContext": "In the Macro resolved backtest sample (n = 32 binary markets), the empirical YES resolution rate is 9.4%. Current contract depth is $1,000 liquidity and $2,869 cumulative volume.",
-        "qualitativeTemplate": "Illustrative domain checklist (central bank policy cycles and official macro releases \u2014 template, not a bespoke thesis): Compare Manifold prices against OIS/SOFR futures, Fed Funds implied odds, and official release calendars.",
+        "baseRateContext": "Of the 32 finished Macro questions in the backtest, 9.4% resolved YES. This question has $1,000 of liquidity and $2,869 traded so far.",
+        "qualitativeTemplate": "Topic checklist for central bank policy cycles and official macro releases (a general template, not a view on this question): Compare Manifold prices against OIS/SOFR futures, Fed Funds implied odds, and official release calendars.",
         "falsifiers": [
           "Official BLS, BEA, or FOMC statement release",
           "Implied probability shift in 30-day Fed Funds or Treasury term structure"
@@ -2134,8 +2134,8 @@
       "tailEvent": false,
       "trace": {
         "ruleComputation": "Market price p = 68.5% maps to log-odds +0.777. Applying the pre-registered extremization factor k = 1.15 gives log-odds +0.893, which maps back via sigmoid to 71.0% (2.5 pp above Manifold).",
-        "baseRateContext": "In the Macro resolved backtest sample (n = 32 binary markets), the empirical YES resolution rate is 9.4%. Current contract depth is $1,000 liquidity and $2,474 cumulative volume.",
-        "qualitativeTemplate": "Illustrative domain checklist (central bank policy cycles and official macro releases \u2014 template, not a bespoke thesis): Compare Manifold prices against OIS/SOFR futures, Fed Funds implied odds, and official release calendars.",
+        "baseRateContext": "Of the 32 finished Macro questions in the backtest, 9.4% resolved YES. This question has $1,000 of liquidity and $2,474 traded so far.",
+        "qualitativeTemplate": "Topic checklist for central bank policy cycles and official macro releases (a general template, not a view on this question): Compare Manifold prices against OIS/SOFR futures, Fed Funds implied odds, and official release calendars.",
         "falsifiers": [
           "Official BLS, BEA, or FOMC statement release",
           "Implied probability shift in 30-day Fed Funds or Treasury term structure"

@@ -812,7 +812,7 @@ function renderSandbox() {
   $('sb-exp-brier-diff').textContent =
     brierExcess < 0.0005
       ? 'As low as it can be: you match p*'
-      : `${brierExcess.toFixed(4)} more error than simply saying p*`;
+      : `${brierExcess.toFixed(4)} more error than saying p* itself`;
   $('sb-kl-div').textContent = `${kl.toFixed(4)} units`;
 
   const verdict = $('sandbox-verdict');

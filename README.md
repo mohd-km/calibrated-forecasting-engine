@@ -2,21 +2,21 @@
 
 Live: https://forecast.mohammed-km.in
 
-A quantitative probabilistic-reasoning workbench: calibrate forecasts against real resolved prediction markets, stress-test risk for fat tails, and update beliefs correctly with Bayes.
+When a prediction market says 70%, the event should happen about 7 times in 10. This lab checks that on real, finished Manifold Markets questions, then shows two other ways chance fools people: fat-tailed crashes and rare-event tests.
 
-Merges the calibrated forecasting engine and the fractal markets & Bayesian lab. Old quant.mohammed-km.in redirects to #fat-tails.
+It merges the calibrated forecasting engine and the fractal markets and Bayesian lab. The old quant.mohammed-km.in address redirects to #fat-tails.
 
 ## Modules
 
-- **#calibration**: Live backtest on real resolved Manifold markets: drag the k (extremising) slider and watch Brier score, log-loss, tail-bin accuracy and the reliability curve update; forward-only forecast ledger.
-- **#fat-tails**: Mandelbrot fat-tail vs Gaussian simulator: tail index alpha, Hurst H and half-life drive live price paths and a KDE vs Normal drawdown comparison, with CSV export.
-- **#bayes**: Bayesian posterior updater with medical-test, trading-signal and VC deal-filter presets, plus Simpson's paradox and base-rate fallacy playgrounds.
+- **#calibration**: backtest on real finished Manifold questions, each priced 7 days before close. Drag the boldness dial k (extremising) and the Brier score (average error), log-loss (surprise penalty), accuracy on confident calls and the reliability curve all update. A forward ledger logs open questions once and scores them only after they settle.
+- **#fat-tails**: a Mandelbrot fat-tailed market next to a Gaussian (bell-curve) one. Tail index alpha, Hurst H (trend memory) and a half-life drive the price paths, a smoothed histogram (KDE) against the normal curve, and a drawdown chart. CSV export included.
+- **#bayes**: a Bayes' rule updater with medical-test, trading-signal and startup-filter presets, plus small playgrounds for Simpson's paradox and the base-rate fallacy.
 
 Tabs are deep-linkable, e.g. `https://forecast.mohammed-km.in/#bayes`.
 
 ## Real vs modelled
 
-Resolved market outcomes and probabilities come from the public Manifold Markets API; fat-tail paths and Bayesian presets are modelled with illustrative inputs.
+Finished market outcomes and prices come from the public Manifold Markets API. The fat-tail price paths and the Bayes presets are modelled with illustrative inputs.
 
 ## Run locally
 

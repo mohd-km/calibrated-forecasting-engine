@@ -14,7 +14,7 @@ export function mountBayes(root) {
     <div class="lab-shell">
       <section class="mod-section">
         <h2 class="mod-h2">Bayesian posterior updater</h2>
-        <p class="mod-lead">Pick an example or move the sliders. The updated belief (posterior), the grid of 1,000 people and the curve all recompute from Bayes' rule. Example numbers are illustrative.</p>
+        <p class="mod-lead">Pick an example or move the sliders. The updated belief (posterior), the grid of 1,000 people and the curve are all recomputed from Bayes' rule. The example numbers are illustrative, not measured.</p>
         <div class="workspace-grid workspace-grid--sidebar">
           <aside class="card">
             <div class="card-head">
@@ -115,7 +115,7 @@ export function mountBayes(root) {
 
       <section class="mod-section">
         <h2 class="mod-h2">Statistical traps playground</h2>
-        <p class="mod-lead">Two ways true numbers can still fool you: a winner in every group that loses overall, and a very accurate test for something rare.</p>
+        <p class="mod-lead">Correct numbers can still mislead. Below are two cases: an option that wins in every group yet loses overall, and a very accurate test for something rare.</p>
         <div class="workspace-grid workspace-grid--two">
           <div class="card">
             <div class="card-head">
