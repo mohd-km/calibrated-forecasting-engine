@@ -813,7 +813,7 @@ function renderSandbox() {
     brierExcess < 0.0005
       ? 'As low as it can be: you match p*'
       : `${brierExcess.toFixed(4)} more error than simply saying p*`;
-  $('sb-kl-div').textContent = `${kl.toFixed(4)} nats`;
+  $('sb-kl-div').textContent = `${kl.toFixed(4)} units`;
 
   const verdict = $('sandbox-verdict');
   const dist = Math.abs(pUser - pMod);
@@ -822,10 +822,10 @@ function renderSandbox() {
     verdict.textContent = `Close to p*: ${fmtPct(pUser, 0)} is within ${(dist * 100).toFixed(1)} percentage points, so the extra penalty is near zero.`;
   } else if (kl < 0.12) {
     verdict.className = 'verdict-banner warn';
-    verdict.textContent = `Some disagreement (${(dist * 100).toFixed(1)} percentage points from p*): on average you pay ${kl.toFixed(3)} extra nats of surprise penalty.`;
+    verdict.textContent = `Some disagreement (${(dist * 100).toFixed(1)} percentage points from p*): on average you pay ${kl.toFixed(3)} extra units of surprise penalty.`;
   } else {
     verdict.className = 'verdict-banner danger';
-    verdict.textContent = `Overconfident: if the answer goes against you, the surprise penalty is ${Math.max(logLossYes(pUser), logLossNo(pUser)).toFixed(2)} nats (on average ${kl.toFixed(3)} extra).`;
+    verdict.textContent = `Overconfident: if the answer goes against you, the surprise penalty is ${Math.max(logLossYes(pUser), logLossNo(pUser)).toFixed(2)} units (on average ${kl.toFixed(3)} extra).`;
   }
 
   renderSandboxSvg(pUser, pMod, pMkt);
@@ -859,7 +859,7 @@ function renderSandboxSvg(pUser, pMod, pMkt) {
 
   parts.push(`<rect x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="none" stroke="#d4d4d0" stroke-width="1" />`);
   parts.push(`<text x="${pad.left + plotW / 2}" y="${H - 10}" text-anchor="middle" fill="#555555" font-family="Inter" font-size="12">Your forecast</text>`);
-  parts.push(`<text x="14" y="${pad.top + plotH / 2}" text-anchor="middle" fill="#555555" font-family="Inter" font-size="12" transform="rotate(-90 14 ${pad.top + plotH / 2})">Penalty (log-loss, nats)</text>`);
+  parts.push(`<text x="14" y="${pad.top + plotH / 2}" text-anchor="middle" fill="#555555" font-family="Inter" font-size="12" transform="rotate(-90 14 ${pad.top + plotH / 2})">Penalty (log-loss)</text>`);
 
   const yesPts = [];
   const noPts = [];

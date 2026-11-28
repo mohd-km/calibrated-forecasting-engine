@@ -10,7 +10,7 @@ export function mountFatTails(root) {
   root.innerHTML = `
     <div class="lab-shell">
       <h2 class="mod-h2">Fat tails vs the bell curve</h2>
-      <p class="mod-lead">Same everyday wobble, two worlds. Blue is a fat-tailed market in the style of Benoit Mandelbrot (an α-stable process with trend memory). Dashed grey is a bell-curve market (a Gaussian random walk) tuned to the same typical daily move.</p>
+      <p class="mod-lead">Same everyday wobble, two worlds. Blue is a fat-tailed market in the style of Benoit Mandelbrot (fat-tailed jumps plus trend memory). Dashed grey is a bell-curve market (a Gaussian random walk) tuned to the same typical daily move.</p>
       <div class="kpi-strip kpi-strip--4" id="ft-kpis" style="margin-bottom:18px;"></div>
 
       <div class="workspace-grid workspace-grid--sidebar">
@@ -110,15 +110,15 @@ export function mountFatTails(root) {
           <div class="formula-grid">
             <div class="formula-item">
               <code>P(|r| &gt; x) &prop; x^(-&alpha;)</code>
-              <p>Big moves get rarer only slowly as they get bigger, so crashes stay plausible. Daily shocks are drawn from a symmetric &alpha;-stable distribution (Chambers-Mallows-Stuck sampling), which Mandelbrot called the Noah effect.</p>
+              <p>Big moves get rarer only slowly as they get bigger, so crashes stay plausible. Daily shocks are drawn from a stable law with tail index &alpha; (2 is the bell curve, lower is wilder). Mandelbrot called these sudden jumps the Noah effect.</p>
             </div>
             <div class="formula-item">
               <code>D = 2 - H, &gamma;(k) = 0.5(|k+1|^(2H) - 2|k|^(2H) + |k-1|^(2H))</code>
-              <p>Trend memory: today's move is correlated with past moves through H, built exactly with fractional Gaussian noise (Cholesky filter). Mandelbrot called this the Joseph effect. D is the path's roughness.</p>
+              <p>Trend memory: today's move is correlated with past moves through H, built exactly as the daily steps of a fractional Brownian path. Mandelbrot called this the Joseph effect. D is the path's roughness.</p>
             </div>
             <div class="formula-item">
               <code>x_t = x_(t-1) - &theta; x_(t-1) + &sigma; &epsilon;_t, &theta; = 1 - 2^(-1/t_half)</code>
-              <p>A gentle pull back toward normal each day (discrete Ornstein-Uhlenbeck mean reversion).</p>
+              <p>A gentle pull back toward normal each day (mean reversion).</p>
             </div>
             <div class="formula-item">
               <code>f_hat(x) = (1 / (n h)) &Sigma; K((x - r_i) / h)</code>

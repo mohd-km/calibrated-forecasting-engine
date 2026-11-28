@@ -222,7 +222,7 @@ export const TEMPLATE = `
                 <div>
                   <h4>The dial, chosen in advance</h4>
                   <p>
-                    The dial converts each crowd price to log-odds (a scale where 50% sits at 0), multiplies by <code>k</code>, and converts back. This is logistic extremisation:
+                    The dial converts each crowd price to log-odds (a scale where 50% sits at 0), multiplies by <code>k</code>, and converts back. This is extremising, done on the log-odds scale:
                     <code>p_model = sigmoid(k &middot; logit(p_market))</code> with default <code>k = 1.15</code>
                     (clamped to <code>[1%, 99%]</code>). Values <code>k &lt; 1</code> shrink crowd prices toward 50%;
                     values <code>k &gt; 1</code> push probabilities toward the tails.
@@ -441,9 +441,9 @@ export const TEMPLATE = `
                   <span id="sb-exp-brier-diff" class="ic-sub">--</span>
                 </div>
                 <div class="insight-card">
-                  <span class="ic-label">Extra penalty for disagreeing (KL divergence)</span>
+                  <span class="ic-label">Extra penalty for disagreeing</span>
                   <span id="sb-kl-div" class="ic-val ochre">--</span>
-                  <span class="ic-sub">Measured in nats, a unit of surprise. 0 means you match p*.</span>
+                  <span class="ic-sub">Measured in units of surprise (natural-log units). 0 means you match p*.</span>
                 </div>
               </div>
             </div>
@@ -529,10 +529,10 @@ export const TEMPLATE = `
               <p>In plain words: both scores are built so that your best long-run strategy is to say exactly what you believe. Exaggerating in either direction always costs you on average.</p>
               <p>
                 Both <strong>Brier Score</strong> <code>(p &minus; y)&sup2;</code> and <strong>Log-Loss</strong>
-                <code>&minus;[y ln(p) + (1 &minus; y) ln(1 &minus; p)]</code> are strictly proper: your expected loss is
+                <code>&minus;[y ln(p) + (1 &minus; y) ln(1 &minus; p)]</code> reward honesty: your expected loss is
                 uniquely minimized when your reported probability equals the true event probability <code>p*</code>.
                 Log-loss diverges toward infinity as a confident forecast misses, with excess expected loss equal to the
-                Kullback&ndash;Leibler divergence <code>D_KL(p* || q)</code>.
+                extra penalty for disagreeing shown above.
               </p>
             </div>
           </details>
